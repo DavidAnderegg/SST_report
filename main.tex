@@ -48,8 +48,8 @@
 
 
 
-\title{Extension of the SA turbulence model for rough walls in ADflow}
-\author{David Anderegg}
+% \title{Adaption of the SST turbulence model for optimization in ADflow}
+% \author{David Anderegg}
 
 % Add Numbering to chapters
 \makeatletter
@@ -76,7 +76,7 @@
 \fancypagestyle{plain}{
     % header inputs
     \lhead{IMES}
-    \chead{Extension of the SA turbulence model for rough walls in ADflow}
+    \chead{Adaption of the SST turbulence model for optimization in ADflow}
     \rhead{\includegraphics[width=1cm]{uni_header}}
 
 
@@ -94,31 +94,7 @@
 
 
     \begin{abstract}
-      As the available computer power increases, Reynolds Averaged Navier Stokes
-(RANS) based optimizations come more and more in reach. When performing such
-high fidelity optimization, it is necessary to properly represent all flow
-conditions. If one fails to do so, the optimizer might exploit effects that do
-not exist in reality.
-
-      This work extends the Spalart Allmaras (SA) turbulence model in the open
-source CFD solver ADflow for rough walls with a modification originally proposed
-by Boeing. ADflow is specialized in optimizations and thus uses the
-\textit{adjoint method} to compute the gradients needed in an efficient manner.
-To make the rough modification available for optimizations, the changes have
-been differentiated using Automatic Differentiation (AD).
-
-    For verification, the implementation is compared against theory, the open
-source CFD solver SU2 and experimental data of a \textit{flat plate a zero
-incidence} for various surface roughnesses. The modified gradients are verified
-using the complex step method.
-
-    The results show that the implementation under-predicts the effect of
-roughness. But the predicted shape of the effect seems correct. The computed
-gradients only match to a relative tolerance of \num{1e-7} compared to complex
-step. A relative tolerance of less than \num{1e-8} would be desirable with the
-methods employed.
-
-
+    abstract
     \end{abstract}
 
     \tableofcontents\clearpage
