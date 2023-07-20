@@ -1,47 +1,48 @@
-\section{Reynold's Averaged Navier Stokes (RANS)}
-The \textit{Navier-Stokes} equations establish the connection between the velocity ($U$),
-pressure ($P$), temperature ($T$), and density ($\rho$) of a moving fluid. These
-equations, represented as partial differential equations, are typically
-challenging to solve analytically. Consequently, numerical methods become
-necessary. The physical properties are functions of four variables: spatial
-coordinates (x, y, z), and time (t). To apply numerical methods effectively,
-these properties must be discretized \cite{nasaNS}.
+\section{Reynold's Averaged Navier Stokes (RANS).}
+The \textit{Navier-Stokes} equations establish the connection between the
+velocity ($U$), pressure ($P$), temperature ($T$), and density ($\rho$) of a
+moving fluid. These equations, represented as partial differential equations,
+are typically challenging to solve analytically. Consequently, numerical
+methods become necessary. The physical properties are functions of four
+variables: spatial coordinates (x, y, z), and time (t). To apply numerical
+methods effectively, these properties must be discretized \cite{nasaNS}.
 
 In flows with high Reynolds numbers, various eddies have significantly
 different length and time scales. Properly capturing the smallest eddies,
 essentially representing turbulence, would require an extremely fine mesh and
-timestep, rendering it impractical. To address this challenge, simplifications
+time step, rendering it impractical. To address this challenge, simplifications
 are necessary: (1) considering a steady flow instead of unsteady, and (2)
 accounting for turbulence in a stochastic manner. By adopting these approaches,
-a single simulation (instead of one every x miliseconds) and a coarser grid
+a single simulation (instead of one every x milliseconds) and a coarser grid
 become sufficient to achieve meaningful results.
 
 
 \subsubsection{Reynolds averaging}
 In 1895, Osborne Reynolds introduced a solution that would later be referred to
-as \textit{Reynolds Averaged Navier-Stokes}. The fundamental concept involves dividing
-the velocity (along with other resolved physical properties) into two
+as \textit{Reynolds Averaged Navier-Stokes}. The fundamental concept involves
+dividing the velocity (along with other resolved physical properties) into two
 components\cite{leschziner2015statistical} :
 
 \begin{equation}
-  U_{i} = \bar U_{i} + u_{i}^{\prime} \qquad
-  P = \bar P + p^{\prime}
+    U_{i} = \bar U_{i} + u_{i}^{\prime} \qquad
+    P = \bar P + p^{\prime}
 \end{equation}
 
 \noindent The subscript $i$ represents all three spatial coordinates (x, y, z).
 The mean velocity, denoted as $\bar U_{i}$, remains constant, while
-$u_{i}^{\prime}$represents the fluctuating component caused by turbulence,
+$u_{i}^{\prime}$ represents the fluctuating component caused by turbulence,
 which remains unresolved. The same notation applies to the pressure $P$.
 Substituting these expressions into the incompressible Navier-Stokes equations
 results in:
 
 \begin{equation}
-  \label{eq:incomp_RANS}
-  \frac{\partial \rho \bar U_{i} \bar U_{j}}{\partial x_{j}} =
-  \frac{\partial \bar P}{\partial x_{i}} +
-  \frac{\partial}{\partial x_{j}} \nu (\frac{\partial \bar U_{i}}{\partial x_{j}} +
-  \frac{\partial \bar U_{j}}{\partial x_{i}}) -
-  \frac{\partial}{\partial x_{j}} \rho u_{i}^{\prime} u_{j}^{\prime}
+    \label{eq:incomp_RANS}
+    \frac{\partial \rho \bar U_{i} \bar U_{j}}{\partial x_{j}} =
+    \frac{\partial \bar P}{\partial x_{i}} +
+    \frac{\partial}{\partial x_{j}} \nu (\frac{\partial 
+    \bar U_{i}}{\partial x_{j}} +
+    \frac{\partial \bar U_{j}}{\partial x_{i}}) -
+    \frac{\partial}{\partial x_{j}} \rho u_{i}^{\prime} u_{j}^{\prime}
 \end{equation}
 
 \noindent The \textit{six} independent \textit{Reynolds-stresses} are
@@ -50,19 +51,24 @@ that the fluctuating component for pressure, $p^{\prime}$, cancels out and does
 not reappear. The Reynolds stresses can be denoted using tensor notation:
 
 \begin{equation}
-  \rho \bar u_{i} \bar u_{j} = \rho
-  \begin{pmatrix}
-    u_{1}^{\prime 2}              & u_{1}^{\prime} u_{2}^{\prime} & u_{1}^{\prime} u_{3}^{\prime} \\
-    u_{2}^{\prime} u_{1}^{\prime} & u_{2}^{\prime 2}              & u_{2}^{\prime} u_{3}^{\prime} \\
-    u_{3}^{\prime} u_{1}^{\prime} & u_{3}^{\prime} u_{2}^{\prime} & u_{3}^{\prime 2}
-  \end{pmatrix}
+    \rho \bar u_{i} \bar u_{j} = \rho
+    \begin{pmatrix}
+        u_{1}^{\prime 2}              & u_{1}^{\prime} u_{2}^{\prime} & 
+        u_{1}^{\prime} u_{3}^{\prime} \\
+
+        u_{2}^{\prime} u_{1}^{\prime} & u_{2}^{\prime 2}              & 
+        u_{2}^{\prime} u_{3}^{\prime} \\
+
+        u_{3}^{\prime} u_{1}^{\prime} & u_{3}^{\prime} u_{2}^{\prime} & 
+        u_{3}^{\prime 2}
+    \end{pmatrix}
 \end{equation}
 
 \noindent Equation \ref{eq:incomp_RANS} is complemented by the Reynolds-averaged
 mass-conservation equation:
 
 \begin{equation}
-  \frac{\partial \rho \bar U_{j}}{\partial x_{j}} = 0
+    \frac{\partial \rho \bar U_{j}}{\partial x_{j}} = 0
 \end{equation}
 
 
@@ -76,24 +82,24 @@ detail.
 
 \paragraph{Eddy viscosity models}
 These kind of models depend on the \textit{Boussinesq-assumption} which says
-that the effect of turbulence is similar to that of an increased viscosity. Thus
-it introduces the \textit{eddy viscosity} $\mu_{t}$. After some equation
+that the effect of turbulence is similar to that of an increased viscosity.
+Thus, it introduces the \textit{eddy viscosity} $\mu_{t}$. After some equation
 mangling one may calculate the Reynolds stresses from the eddy viscosity as
 follows:
 
 \begin{equation}
-  - \rho u_{i}^{\prime} u_{j}^{\prime} =
-  \nu_{t} (\frac{\partial \bar U_{i}}{\partial x_{j}} +
-  \frac{\partial \bar U_{j}}{\partial x_{i}}) -
-  \frac{2}{3} \delta_{ij} \rho k
-  \label{eq:boussinesq}
+    - \rho u_{i}^{\prime} u_{j}^{\prime} =
+    \nu_{t} (\frac{\partial \bar U_{i}}{\partial x_{j}} +
+    \frac{\partial \bar U_{j}}{\partial x_{i}}) -
+    \frac{2}{3} \delta_{ij} \rho k
+    \label{eq:boussinesq}
 \end{equation}
 
 \noindent Where
 
 \begin{align*}
-  \delta_{ij} = \; &0 \qquad \text{for} \qquad i \neq j \\
-                   &1 \qquad \text{for} \qquad i = j
+    \delta_{ij} = \; &0 \qquad \text{for} \qquad i \neq j \\
+    &1 \qquad \text{for} \qquad i = j
 \end{align*}
 
 \noindent and $k$ is the \textit{turbulent kinetic energy}. Thus the calculation
