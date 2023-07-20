@@ -1,0 +1,150 @@
+ % \documentclass[a4paper, draft]{report}
+\documentclass[a4paper, 10pt]{report}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{csquotes}
+\usepackage{hyphenat}
+\usepackage{biblatex}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subfig}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{booktabs}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage[acronym]{glossaries}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{setspace}
+\usepackage{tablefootnote}
+
+
+\usepackage{tablefootnote}
+
+% \usepackage[scale=1.0]{draftwatermark}
+
+\addbibresource{biblio.bib}
+\input{glossaries.tex}
+\graphicspath{
+    {img}
+    {fundamentals/img}
+    {methods/img}
+    {results/img}
+}
+% \hyphenation{Mathe-matik wieder-gewinnen}
+
+% use 1e-10 instead of 1 x 10^(-10)
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+
+
+
+\title{Extension of the SA turbulence model for rough walls in ADflow}
+\author{David Anderegg}
+
+% Add Numbering to chapters
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \interlinepenalty\@M
+    \Huge\bfseries  \thechapter.\quad #1\par\nobreak
+    \vskip 40\p@
+  }}
+\makeatother
+
+\renewcommand{\arraystretch}{1.1}
+
+
+
+\usepackage{fancyhdr}
+\setlength{\headheight}{34pt}
+
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+
+\fancypagestyle{plain}{
+    % header inputs
+    \lhead{IMES}
+    \chead{Extension of the SA turbulence model for rough walls in ADflow}
+    \rhead{\includegraphics[width=1cm]{uni_header}}
+
+
+    %footer inputs
+    % \lfoot{Innosuisse 35172.1 IP-ENG}
+    \cfoot{Page  \thepage}
+    \rfoot{\today}
+}
+\pagestyle{plain}
+
+\setlength{\parskip}{.25em}
+
+\begin{document}
+    \input{titlepage.tex}
+
+
+    \begin{abstract}
+      As the available computer power increases, Reynolds Averaged Navier Stokes
+(RANS) based optimizations come more and more in reach. When performing such
+high fidelity optimization, it is necessary to properly represent all flow
+conditions. If one fails to do so, the optimizer might exploit effects that do
+not exist in reality.
+
+      This work extends the Spalart Allmaras (SA) turbulence model in the open
+source CFD solver ADflow for rough walls with a modification originally proposed
+by Boeing. ADflow is specialized in optimizations and thus uses the
+\textit{adjoint method} to compute the gradients needed in an efficient manner.
+To make the rough modification available for optimizations, the changes have
+been differentiated using Automatic Differentiation (AD).
+
+    For verification, the implementation is compared against theory, the open
+source CFD solver SU2 and experimental data of a \textit{flat plate a zero
+incidence} for various surface roughnesses. The modified gradients are verified
+using the complex step method.
+
+    The results show that the implementation under-predicts the effect of
+roughness. But the predicted shape of the effect seems correct. The computed
+gradients only match to a relative tolerance of \num{1e-7} compared to complex
+step. A relative tolerance of less than \num{1e-8} would be desirable with the
+methods employed.
+
+
+    \end{abstract}
+
+    \tableofcontents\clearpage
+
+
+    \chapter{Introduction}
+    \input{introduction/introduction.tex}
+
+    \chapter{Theoretical Fundamentals}
+    \input{fundamentals/fundamentals.tex}
+
+    \chapter{Methods}
+    \input{methods/methods.tex}
+
+
+    \chapter{Results}
+    \input{results/results.tex}
+
+
+    \chapter{Conclusion}
+    \input{conclusion/conclusion.tex}
+
+    \listoffigures\clearpage
+    \listoftables\clearpage
+
+
+    \printbibliography
+
+\end{document}
