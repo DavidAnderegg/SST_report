@@ -122,3 +122,29 @@ of the six Reynolds-stresses has reduced to calculating $\nu_{t}$ and $k$
 \subsection{$k$ - $\omega$ SST model}
 
 
+\section{Grid Convergence}
+When discretizing a partial differential equation and solving it numerically,
+an error is introduced. It may be decreased through a finer mesh or a higher
+order method. To demonstrate that the method approaches the exact solution,
+finder and finer grids are used. This process is called a \textit{grid
+refinement study} or \textit{mesh convergence}. For a given grid, the grid
+spacing is:
+
+\begin{equation}
+  h = N^{-1/d}
+\end{equation}
+
+\noindent Where $N$ is the number of cells and $d$ is the dimension of the
+problem.
+For ADflow, the expected rate of convergence is $p=2$. But in reality, this
+might not be the case. For three grids, the actual rate may be calculated as
+follows:
+
+\begin{equation}
+  \hat p = ln(\frac{f_{L2} - f_{L1}}{f_{L1} - f_{L0}}) / ln(r)
+  \label{eq:conv_rate}
+\end{equation}
+
+\noindent Where $f$ is the function of interest (e.g. $c_{d}$) and the subscript
+tells the grid used. $L0$ is the finest grid and $L2$ the coarsest. The
+parameter $r$ is the grid refinement ratio \cite{grid_refinement}.
