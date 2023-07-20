@@ -1,1 +1,74 @@
-intro
+High fidelity optimization using gradient based approaches have become more
+and more popular as they do not suffer from the \textit{curse of
+dimensionality}. This allows them to have a much higher number of
+design variables (dvs) compared to genetic optimization
+approaches. This report describes how the SST turbulence model was modified to
+work in ADflow for simulation and gradient computation.
+
+
+
+\section{ADflow}
+ADflow is an open-source multi-block\footnote{Overset meshes are also
+possible.} Computational Fluid Dynamics (CFD) solver. It solves the Reynolds
+Averaged Navier Stokes (RANS) equations to obtain the flow solution. It is
+developed and maintained at the \textit{MDOLab} at the university of Michigan
+and was based on a CFD solver for turbo machinery called \textit{sumb}. It has
+later been adopted  for gradient based optimization by means of
+\textit{Algorithmic Differentiation}\footnote{Thats what AD stands for in
+ADflow.} and the \textit{adjoint method}. Most of ADflow is written in Fortran.
+But it is interfaced in Python. This means, the heavy lifting is done in a fast
+language, but the regular user has the benefits of an object-oriented high
+level interpreter language.
+
+ 
+In optimization, a lot of simulations are necessary until an optimal design is
+found. It is also highly important to always get an objective value for each
+design, even if, or especially when, it is unphysical. Otherwise the optimizer
+does not know how bad the current design is. To cater those concerns, ADflow
+employs some highly efficient and robust NK\footnote{NK stands for the
+Newton–Krylov method.} and ANK\footnote{ANK is an approximated Newton–Krylov
+method.} solvers. Those can achieve machine-precision convergence, even for
+aircraft configurations at an angle of attack of 90\degree \cite{Mader2020a}
+\cite{Kenway2019a} \cite{Yildirim2019b}.
+
+When the solver was still called sumb, various turbulence models such as
+Spalart-Allmaras, Spalart-Allmaras with Edwards Modification, $k$ - $\omega$
+Wilox, $k$ - $\omega$ Wilox modified, $k$ - $\tau$, v2-f and Menter SST were
+implemented. The subsequent modification for optimizations changed the
+structure dramatically and only the SA model was carried over.
+
+
+\section{Goals}
+As stated above, the legacy code for SST is still available but does not really
+work anymore. The goal for this project is to get it working for simulation and
+optimization. The necessary sub-steps may be summarized as follows:
+
+\begin{enumerate}
+    \item Get the current SST model running using a legacy DADI-method.
+
+    \item Modify it in such a way that it is automatically differentiate-able.
+
+    \item Actually differentiate it through AD
+
+    \item Make sure the partial AD derivatives are correct. 
+
+    \item Get the NK/ANK Solver working.
+
+    \item Test and verify the implementation
+
+    \item Get the adjoint Solver working.
+
+    \item Test and verify the modified gradients.
+\end{enumerate}
+
+
+
+
+\section{Code contributions}
+Part of this project is a code contribution to ADflow and a setup of test
+cases, both can be found on GitHub under those links:\\
+
+\begin{tabular}{l l}
+  ADflow Pull Request & \url{LINK_TO_PR} \\
+  Test cases & \url{https://github.com/DavidAnderegg/SST_rough_testcases}
+\end{tabular}
