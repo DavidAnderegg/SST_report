@@ -129,10 +129,14 @@ figure \ref{fig:law_of_wall}.
 
 \begin{figure}[H] \centering
 \includegraphics[width=0.45\textwidth]{law_of_wall}
-    \caption{Cross section of a fully developed turbulent boundary layer
-             overlayed with measurements\cite{Schlichting2018}.}
+    \caption{Cross-section of a fully developed turbulent boundary layer
+             overlapped with measurements\cite{Schlichting2018}.}
     \label{fig:law_of_wall}
 \end{figure}
+
+
+
+
 
 
 
@@ -218,7 +222,6 @@ viscosity} models and \textit{Reynolds stress transport} models. The SST model
 belongs to the former category, and therefore, it will be elaborated on in more
 detail.
 
-
 \paragraph{Eddy viscosity models}
 These kind of models depend on the \textit{Boussinesq-assumption} which says
 that the effect of turbulence is similar to that of an increased viscosity.
@@ -245,28 +248,56 @@ follows:
 of the six Reynolds-stresses has reduced to calculating $\nu_{t}$ and $k$.
 \cite{leschziner2015statistical}
 
+\paragraph{Turbulent kinetic energy}
+This is the mean \textit{kinetic energy} per unit mass associated with eddies
+in turbulent flows. It is defined as half the sum of variances of the velocity
+components:
+
+\begin{equation}
+    k = \frac{1}{2} \left( 
+    \overline{(u^{\prime})^2} +
+    \overline{(v^{\prime})^2} +
+    \overline{(w^{\prime})^2}
+    \right)
+\end{equation}
+
+
+
+
+
 
 
 
 \section{Turbulence models}
+\label{sec:turb_models}
 The SST model is a mix between the $k$ - $\epsilon$ and $k$ - $\omega$
-turbulence models. Because of that, both are explained in this section.
+turbulence models. Because of that, both are explained in this section. 
+
+\paragraph{Specific turbulence dissipation rate $\omega$}
+This is basically $\epsilon$ but divided by $C_{\nu} k$ where $C_{\nu}$ equals
+$0.09$.
+
+
 
 
 \subsection{$k$ - $\epsilon$ model}
-This model was first introduced in 1972 and solves two transport equations
-.\cite{JONES1972301} One for the turbulent kinetic energy ($k$) and one for the
-dissipation rate $\epsilon$. To apply the Boussinesq-assumption, $k$ and
+This model was first introduced in 1972 and solves two transport equations.
+\cite{JONES1972301} One for the turbulent kinetic energy ($k$) and one for the
+dissipation rate ($\epsilon$) \footnote{The rate at which $k$ is converted into
+thermal energy through viscosity}. To apply the Boussinesq-assumption, $k$ and
 $\nu_t$ are needed. The first one is solved for directly and the second one is
 calculated as follows:
 
 \begin{equation}
+    \label{eq:k_epsilon_nu_t}
     \nu_t = C_{\nu} \frac{\rho k^2}{\epsilon}
 \end{equation}
 
 
+\subsubsection{Transport equations}
 \noindent The transport equations are as follows:
 \begin{align}
+    \label{eq:transport_k}
     \frac{\partial (\rho k)}{\partial t} + 
     \nabla \cdot (\rho U k) &=
     \nabla \cdot \left[ 
@@ -292,10 +323,15 @@ Originally, they were defined as follows:
 \end{align*}
 
 \noindent This form of the model is called the \textit{high-Reynolds-number
-form}. As its name suggests, its prediction is poor near walls. This is due to
-blocking effects of the wall that lower the dissipation. The original authors
-proposed an extension that is better suited. This is called
-\textit{low-Reynolds-number form}. The model is modified as follows:
+form}. As its name suggests, its prediction is poor near walls where the
+Reynolds-number is low. This is due to blocking effects of the wall in the
+viscous sub-layer that lowers the dissipation. 
+
+
+\subsubsection{Modifications for near wall flows}
+The original authors proposed an extension that is better suited for flows in
+the viscous sub-layer. It is called \textit{low-Reynolds-number form}. The
+model is modified as follows:
 
 \begin{align}
     \nu_t = \textcolor{red}{f_{\nu}} C_{\nu} \frac{\rho k^2}{\epsilon},  \qquad
@@ -327,7 +363,20 @@ left it at 1. The function $f_2$ is applied to the dissipation of $\epsilon$
 and consequently lowers it near the wall it.
 
 
-\paragraph{Conclusion}
+\subsubsection{Boundary conditions}
+The boundary conditions are \cite{JONES1972301}:
+
+\begin{align*}
+    k_{w}        &= 0       &\epsilon_{w} &= 0 \\
+    u_{\infty} \frac{d k_{\infty}}{d x}  &= - \epsilon_{\infty}
+    & u_{\infty} \frac{d k_{\infty}}{d x} &= 
+    - C_2 f_2 \epsilon_{\infty}^2 / k_{\infty}
+\end{align*}
+\noindent Where the subscript $w$ stands for \textit{wall} and $\infty$ for the
+\textit{freestream condition}.
+
+
+\subsubsection{Weaknesses}
 This model works well for prediction flows outside of boundary layers. Although
 it has the capacity to predict the flow near the wall, inside the boundary
 layer, it does so poorly. If there are \textbf{adverse pressure gradients}
@@ -336,9 +385,72 @@ even worse. \cite{cfd101_k-epsilon}
 
 
 
+
 \subsection{$k$ - $\omega$ model}
 Because of the shortcomings mentioned in the section before, a better
-turbulence model was needed for aerodynamics and turbumachinery.
+turbulence model was needed for aerodynamics and turbomachinery. The specific
+turbulent dissipation rate $\omega$ is related to $\epsilon$ as follows:
+
+\begin{equation}
+    \omega = \frac{\epsilon}{C_{\nu} k}
+\end{equation}
+
+\noindent where $C_{\nu} = 0.09$. Plugging this into equation
+\ref{eq:k_epsilon_nu_t} leads to:
+
+\begin{equation}
+    \nu_t = \frac{\rho k}{\omega}
+\end{equation}
+
+
+\subsubsection{Transport equations}
+The transport equations for $k$ remains the same as in equation
+\ref{eq:transport_k}. But the transport equation for $\omega$ is different:
+
+\begin{equation}
+    \frac{\partial (\rho \omega)}{\partial t} + 
+    \nabla \cdot (\rho U \omega) =
+    \nabla \cdot \left[ 
+        \left( \nu + \frac{\nu_t}{\sigma_{\omega}}\right) + \nabla  \omega
+    \right] + \frac{\gamma}{\nu_t} P_k - \beta \rho \omega^2
+\end{equation}
+
+\noindent The constants for the Wilcox 1988 version\footnote{There a lot of
+different versions for this model} are as follows: \cite{nasatmr}
+
+\begin{align*}
+    \beta^{*}   &= 0.09    & \beta              &= 3/40  & \gamma &= 5/9\\
+    \sigma_k    &= 0.5     & \sigma_{\omega}    &= 0.5
+\end{align*}
+
+
+\subsubsection{Boundary conditions}
+The boundary conditions for the wall are equal to the $k$ - $\epsilon$ model.
+As there are many different versions, it is not quite clear what the correct
+values for the farfield are. But a low value, maybe even 0, seems reasonable as
+there should not be much turbulence far away from an aircraft for example.
+\cite{cfd101_k-omega}
+
+\begin{align*}
+    k_{w}        &= 0           &\epsilon_{w}       &= 0 \\
+    k_{\infty}   &\approx 0     &\epsilon_{\infty}  &\approx 0 \\
+\end{align*}
+
+
+\subsubsection{Differences to $k$ - $\epsilon$}
+Both models are similar, but the $k$ - $\omega$ model does not need damping
+functions which are not accurate for adverse pressure gradients. Because of
+that, the $k$ - $\omega$ model is a lot better for flows inside boundary layers
+and thus gives better predictions for aerodynamics and turbomachinery.
+
+
+\subsubsection{Weaknesses}
+The biggest problem this model has is its dependence on the freestream boundary
+conditions. Even small changes can lead to drastic different skin friction
+coefficients which leads to different flow separation points.
+\cite{cfd101_k-omega}
+
+
 
 
 
