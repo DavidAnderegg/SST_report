@@ -5,7 +5,7 @@ moving fluid. These equations, represented as partial differential equations,
 are typically challenging to solve analytically. Consequently, numerical
 methods become necessary. The physical properties are functions of four
 variables: spatial coordinates (x, y, z), and time (t). To apply numerical
-methods effectively, these properties must be discretized \cite{nasaNS}.
+methods effectively, these properties must be discretized. \cite{nasaNS}
 
 In flows with high Reynolds numbers, various eddies have significantly
 different length and time scales. Properly capturing the smallest eddies,
@@ -21,7 +21,7 @@ become sufficient to achieve meaningful results.
 In 1895, Osborne Reynolds introduced a solution that would later be referred to
 as \textit{Reynolds Averaged Navier-Stokes}. The fundamental concept involves
 dividing the velocity (along with other resolved physical properties) into two
-components\cite{leschziner2015statistical} :
+components: \cite{leschziner2015statistical}
 
 \begin{equation}
     U_{i} = \bar U_{i} + u_{i}^{\prime} \qquad
@@ -103,23 +103,126 @@ follows:
 \end{align*}
 
 \noindent and $k$ is the \textit{turbulent kinetic energy}. Thus the calculation
-of the six Reynolds-stresses has reduced to calculating $\nu_{t}$ and $k$
-\cite{leschziner2015statistical}.
+of the six Reynolds-stresses has reduced to calculating $\nu_{t}$ and $k$.
+\cite{leschziner2015statistical}
 
 
+
+
+\section{Turbulence models}
+The SST model is a mix between the $k$ - $\epsilon$ and $k$ - $\omega$
+turbulence models. Because of that, both are explained in this section.
 
 
 \subsection{$k$ - $\epsilon$ model}
+This model was first introduced in 1972 and solves two transport equations
+.\cite{JONES1972301} One for the turbulent kinetic energy ($k$) and one for the
+dissipation rate $\epsilon$. To apply the Boussinesq-assumption, $k$ and
+$\nu_t$ are needed. The first one is solved for directly and the second one is
+calculated as follows:
 
+\begin{equation}
+    \nu_t = C_{\nu} \frac{\rho k^2}{\epsilon}
+\end{equation}
+
+
+\noindent The transport equations are as follows:
+\begin{align}
+    \frac{\partial (\rho k)}{\partial t} + 
+    \nabla \cdot (\rho U k) &=
+    \nabla \cdot \left[ 
+        \left( \nu + \frac{\nu_t}{\sigma_k}\right) + \nabla k 
+    \right] + P_k + P_b - \rho \epsilon + S_k \\
+%
+    \frac{\partial (\rho \epsilon)}{\partial t} + 
+    \nabla \cdot (\rho U \epsilon) &=
+    \nabla \cdot \left[ 
+        \left( \nu + \frac{\nu_t}{\sigma_{\epsilon}}\right) + \nabla  \epsilon
+    \right] + C_1 \frac{\epsilon}{k}(P_k + P_b) - 
+    C_2 \rho \frac{\epsilon^2}{k} + S_c
+\end{align}
+
+\noindent Where $P_k$ is the production due to mean velocity shear, $P_b$ is
+the production due to buoyancy and $S_k$ is a user defined source. The
+remaining constants have been derived from experiments and may change.
+Originally, they were defined as follows:
+
+\begin{align*}
+    C_1 &= 1.55         & C_2               &= 2.0  & C_{\nu} &= 0.09\\
+    \sigma_k &= 1.0     & \sigma_{\epsilon} &= 1.3
+\end{align*}
+
+\noindent This form of the model is called the \textit{high-Reynolds-number
+form}. As its name suggests, its prediction is poor near walls. This is due to
+blocking effects of the wall that lower the dissipation. The original authors
+proposed an extension that is better suited. This is called
+\textit{low-Reynolds-number form}. The model is modified as follows:
+
+\begin{align}
+    \nu_t = \textcolor{red}{f_{\nu}} C_{\nu} \frac{\rho k^2}{\epsilon},  \qquad
+%
+    ... + C_1 \frac{\epsilon}{k}(\textcolor{red}{f_1} P_k + P_b) 
+    - \textcolor{red}{f_2} C_2 \rho \frac{\epsilon^2}{k} + ..
+\end{align}
+
+\noindent Where the modifications in red are damping functions that are defined
+as follows:
+
+\begin{align}
+    f_1 &= 1 \\
+    f_2 &= 1 - 0.3 exp(-Re_T^2) \\
+    f_{\nu} &= exp \left( \frac{-3.4}{(1 + (Re_T/50))^2}\right) \\
+\end{align}
+
+\noindent Where $Re_T$ is the turbulent Reynolds number which is:
+
+\begin{equation}
+    Re_T = \frac{\rho k^2}{\nu \epsilon} 
+\end{equation}
+
+\noindent The damping function $f_{\nu}$ tends to be 1 far from the wall
+because $Re_T$ tends to be high there. Close to the wall, $f_{\nu}$, where
+$Re_T$ is low, goes towards 0 and thus the effects of the eddy viscosity
+vanish. The original authors did not see an improvement for $f_1$ and therefore
+left it at 1. The function $f_2$ is applied to the dissipation of $\epsilon$
+and consequently lowers it near the wall it.
+
+
+\paragraph{Conclusion}
+This model works well for prediction flows outside of boundary layers. Although
+it has the capacity to predict the flow near the wall, inside the boundary
+layer, it does so poorly. If there are \textbf{adverse pressure gradients}
+and/or \textbf{shocks} present, the prediction inside the boundary layer is
+even worse. \cite{cfd101_k-epsilon}
 
 
 
 \subsection{$k$ - $\omega$ model}
+Because of the shortcomings mentioned in the section before, a better
+turbulence model was needed for aerodynamics and turbumachinery.
+
+
 
 
 
 
 \subsection{$k$ - $\omega$ SST model}
+
+
+
+
+\section{Algorithmic Differentiation and the adjoint method}
+\subsection{Overview}
+briefly explain AD and adjoint. Reference to adjoint report. Also mention  
+
+
+\subsection{Verification}
+How those things can be validated 
+\subsubsection{Finite Differences}
+\subsubsection{Complex Step}
+\subsubsection{Dot Product Test}
+
+
 
 
 \section{Grid Convergence}
@@ -147,4 +250,4 @@ follows:
 
 \noindent Where $f$ is the function of interest (e.g. $c_{d}$) and the subscript
 tells the grid used. $L0$ is the finest grid and $L2$ the coarsest. The
-parameter $r$ is the grid refinement ratio \cite{grid_refinement}.
+parameter $r$ is the grid refinement ratio .\cite{grid_refinement}
