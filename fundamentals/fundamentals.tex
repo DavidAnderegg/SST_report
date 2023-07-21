@@ -1,3 +1,142 @@
+\section{Boundary layer}
+To introduce the concept of a boundary layer, envision a uniform flow moving in
+a single direction with a constant speed $U_{\infty}$. Now, imagine placing a
+slender plate in this flow, aligning its long side with the direction of the
+flow. This configuration is commonly referred to as a \textit{flat plate at
+zero incidence.} At the surface of the plate, the \textit{no-slip condition}
+must be met, meaning the flow slows down until it comes to a complete stop at
+the surface. However, this deceleration doesn't occur in a linear manner; a
+significant portion of the flow maintains a uniform velocity. Only in the
+vicinity of the plate's surface does the flow experience a slowdown, primarily
+due to frictional forces. This specific area is termed the \textit{boundary
+layer} or \textit{frictional layer.} The thickness of the boundary layer,
+denoted as $\delta(x)$, is influenced by various factors, with its position
+from the leading edge being the most prominent one. In reality, there is no
+sharp demarcation between the uniform flow and the boundary layer. Therefore,
+it is often defined as the region where the flow reaches 99\% of the velocity
+of the outer flow \cite{Schlichting2018}. Refer to Figure
+\ref{fig:boundary_layer_flat_plate} for a visual representation of this
+concept.
+
+\begin{figure}[H] \centering
+\includegraphics[width=0.5\textwidth]{boundary_layer_flat_plate}
+    \caption{Laminar boundary layer of a flat plate at zero incidence
+    \cite{Schlichting2018}.}
+    \label{fig:boundary_layer_flat_plate}
+\end{figure}
+
+\subsubsection{Types of boundary layers}
+The flow within the boundary layer can exhibit two different characteristics:
+\textit{laminar} or \textit{turbulent}. In actuality, it starts as laminar at
+the leading edge, then undergoes a transition to turbulence over a specific
+distance, and eventually becomes fully turbulent thereafter
+\cite{Schlichting2018}, this report specifically focuses on a fully turbulent
+turbulence model, and as a result, the explanations of the laminar and
+transitional boundary layers are not further elaborated upon.
+
+\subsubsection{Frictional forces}
+As explained earlier, the flow in the boundary layer is slowed down until it
+becomes zero at the surface. This slowing down exerts a force in the flow
+direction on the surface. This force, normalized by its application area, is
+called \textit{shear stress} ($\tau_{w}$). To obtain a dimensionless
+coefficient, which may be easily compared, the shear stress is divided by the
+\textit{dynamic pressure} \cite{Schlichting2018}:
+
+\begin{equation}
+  c_{f} = \frac{\tau_{w}(x)}{\frac{1}{2}\rho U_{\infty}^{2}}
+\end{equation}
+
+\noindent Where $\rho$ is the density of the fluid and $c_{f}$ the skin friction
+coefficient.
+
+
+\subsection{Turbulent boundary layer}
+\label{sec:turbulent_BL}
+Upon closer examination of a turbulent boundary layer, one can discern two
+distinct regions. The upper region constitutes a \textit{turbulent layer},
+which is influenced indirectly by friction with the wall. In contrast, the
+lower region is noticeably thinner compared to the overall boundary layer. This
+lower region is referred to as the \textit{viscous sublayer} or \textit{viscous
+wall} layer" and is directly influenced by friction. Just like the boundary
+layer's broader context, there is no clear demarcation between these two
+regions; instead, a smooth transition can be observed.
+
+To analyze the cross-section of the boundary layer effectively, it is helpful
+to introduce the concept of the dimensionless \textit{wall distance}, denoted
+as $y^{+}$. In conjunction with this, we also consider the dimensionless
+velocity, $u^{+}$. Adopting this dimensionless system facilitates the
+comparison of various boundary layers from different flow conditions in a more
+straightforward manner. The expression for the dimensionless velocity, $u^{+}$,
+is as follows:  \cite{Schlichting2018}
+
+\begin{equation}
+  u^{+} = \frac{u}{u_{\tau}}
+\end{equation}
+
+\noindent Whereas $u$ is the flow velocity and $u_{\tau}$ the \textit{friction
+velocity}. It is given by:
+
+\begin{equation}
+  u_{\tau} = \sqrt{\frac{\tau_{w}}{\rho}}
+\end{equation}
+
+\noindent As before, $\tau_{w}$ is the \textit{shear stress} and $\rho$ the
+\textit{density}. The dimensionless \textit{wall distance} $y^{+}$ is given by:
+
+\begin{equation}
+  y^{+} = \frac{yu_{\tau}}{\nu}
+\end{equation}
+
+\noindent Whereas $y$ is the distance to the wall and $\nu$ is the
+\textit{kinematic viscosity} of the fluid.
+
+
+\subsubsection{Universal law of the wall}
+Theory which describes the velocity distribution of a turbulent boundary layer
+in fully developed flow\footnote{This means, the flow does not change with
+increasing x.}  is know as the \textit{universal law of the wall}. It defines
+the different regions as follows \cite{Schlichting2018}:
+
+\paragraph{Viscous sublayer ($y^{+} < 5$)}
+For the viscous sublayer, $u^{+}$ is given by:
+
+\begin{equation}
+  u^{+} = y^{+}
+\end{equation}
+
+\paragraph{Logarithmic overlap law ($y^{+} > 30$)}
+In the fully turbulent region at the top of the boundary layer, the turbulence
+stress dominates and the velocity profile varies very slowly with a logarithmic
+function:
+
+\begin{equation}
+  u^{+} = \frac{1}{\kappa} ln(y^{+}) + C^{+}
+  \label{eq:overlap_law}
+\end{equation}
+
+\noindent The Karman constant $\kappa$ is equal to $0.41$ and $C^{+}$ equals to
+$5.0$ for smooth walls.
+
+\paragraph{Buffer layer ($5 < y^{+} < 30$)}
+The \textit{buffer layer} is located between the viscous sublayer and the
+logarithmic area. It is a region where the flow transitions from one to the
+other. It can not be described with such an easy equation as for the other two
+regions.
+
+If we plot the wall distance $y^{+}$ on a logarithmic scale and the velocity
+$u^{+}$ on a linear scale, the different regions are obvious. Take a look at
+figure \ref{fig:law_of_wall}.
+
+\begin{figure}[H] \centering
+\includegraphics[width=0.45\textwidth]{law_of_wall}
+    \caption{Cross section of a fully developed turbulent boundary layer
+             overlayed with measurements\cite{Schlichting2018}.}
+    \label{fig:law_of_wall}
+\end{figure}
+
+
+
+
 \section{Reynold's Averaged Navier Stokes (RANS).}
 The \textit{Navier-Stokes} equations establish the connection between the
 velocity ($U$), pressure ($P$), temperature ($T$), and density ($\rho$) of a
