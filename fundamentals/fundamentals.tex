@@ -531,12 +531,14 @@ The constants for the standard Menter SST variant from 1994  are as follows:
 The blending function is computed as follows:
 
 \begin{equation}
+    \label{eq:f1}
     F_1 = tanh(arg_1^4)
 \end{equation}
 
 \noindent Where:
 
 \begin{equation}
+    \label{eq:arg1}
     arg_1 = min \left[ max \left( 
     \frac{\sqrt{k}}{\beta^{*} \omega d}, \frac{500 \nu}{d^2 \omega}
     \right), 
@@ -547,6 +549,7 @@ The blending function is computed as follows:
 \noindent Where $d$ is the distance to the nearest wall and $CD_{kw}$:
 
 \begin{equation}
+    \label{eq:cdkw}
     CD_{kw} = max \left( 
     2 \rho \sigma_{\omega 2} \frac{1}{\omega} \nabla k \nabla \omega, 10^{-20} 
     \right)

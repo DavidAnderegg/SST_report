@@ -81,7 +81,7 @@ work \footnote{See pull request:
 \url{https://github.com/mdolab/adflow/pull/107}}. To summarize, before this
 project started, the code for SST was there and could be solved using ANK/SANK
 and the decoupled DADI turbulence solver. But nothing was differentiated which
-means, the adjoint and coupled ANK solvers were not usable.
+means, the adjoint, NK and coupled ANK solvers were not usable.
 
 
 
@@ -89,7 +89,56 @@ means, the adjoint and coupled ANK solvers were not usable.
 
 
 
-\section{Extension of \texttt{d2Wall}}
+
+\section{Needed changes}
+ADflow can parallelize the computation over multiple cpus and computers. It
+does this by splitting up the computational domain into blocks. These blocks
+may live on different cpus or computers. As those blocks do not live in
+isolation and do depended on each other, adjacent blocks need to exchange
+information. ADflow uses the \textit{halo cell} approach for this. The idea is
+to have imaginary ghost (halo) cells around each block. Then they are filled
+with the values from the adjacent blocks. Figure \ref{fig:halo_cells} shows
+this idea. One difference to the picture is that ADflow uses two layers of halo
+cells.
+
+\begin{figure}[H] \centering
+\includegraphics[width=0.7\textwidth]{halo_cells}
+    \caption{A block split in 4 (left) and its corresponding halo cells (right)
+            \cite{cfd_halo}.}
+    \label{fig:halo_cells}
+\end{figure}
+
+
+
+
+\subsection{Halo exchange and AD}
+This halo exchange is straight forward when one does not care about automatic
+differentiation. But we do, and as such, some things need to be considered. The
+exchanges is performed using the \textit{Message Passing Interface (MPI)}.
+Unfortunately, tapenade can not handle MPI calls. To make this work, the
+differentiated code is divided into parts: The \textbf{math heavy} part is
+differentiated using tapenade. The \textbf{remaining part} is
+hand-differentiated. This is not a big problem as this part mostly consists of
+calling the AD part and performing communication. 
+
+The turbulence model is considered a math heavy part that is automatically
+differentiated using tapenade. For SA, this was straight forward as there is no
+communication going on. But SST has one special case: The blending function
+$\mathbf{F_1}$ (equation \ref{eq:f1}). The problem is, it is not a normal
+turbulence working variable (such as $k$ or $\omega$) and thus is not exchanged
+using existing infrastructure. The developers of sumb fixed this by exchanging
+it manually after computing it. This is done in the model itself and was no
+problem because nobody intended to AD it. \\
+
+Now the question is: Why was it done this way and how do we get rid of this
+intermediate communication?
+
+The first part of the questions might be explained by fact that sumb was
+initially developed in the early 2000's. Back then, computing power was more
+expensive and computing the same $F_1$ value on different blocks was
+wasteful. The cost of communication was negligible in comparison. This did not
+really change, but computing power became a lot cheaper. So if it makes AD
+easier, it is a good trade to get rid of the communication.
 
 \section{Algorithmic/Automatic Differentiation}
 
