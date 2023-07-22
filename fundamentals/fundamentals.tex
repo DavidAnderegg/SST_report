@@ -302,19 +302,19 @@ calculated as follows:
     \nabla \cdot (\rho U k) &=
     \nabla \cdot \left[ 
         \left( \nu + \frac{\nu_t}{\sigma_k}\right) + \nabla k 
-    \right] + P_k + P_b - \rho \epsilon + S_k \\
+    \right] + P - \rho \epsilon \\
 %
+    \label{eq:tranport_epsilon}
     \frac{\partial (\rho \epsilon)}{\partial t} + 
     \nabla \cdot (\rho U \epsilon) &=
     \nabla \cdot \left[ 
         \left( \nu + \frac{\nu_t}{\sigma_{\epsilon}}\right) + \nabla  \epsilon
-    \right] + C_1 \frac{\epsilon}{k}(P_k + P_b) - 
-    C_2 \rho \frac{\epsilon^2}{k} + S_c
+    \right] + C_1 \frac{\epsilon}{k}P - 
+    C_2 \rho \frac{\epsilon^2}{k}
 \end{align}
 
-\noindent Where $P_k$ is the production due to mean velocity shear, $P_b$ is
-the production due to buoyancy and $S_k$ is a user defined source. The
-remaining constants have been derived from experiments and may change.
+\noindent Where $P$ is the production due to mean velocity shear and buoyancy.
+The remaining constants have been derived from experiments and may change.
 Originally, they were defined as follows:
 
 \begin{align*}
@@ -336,7 +336,7 @@ model is modified as follows:
 \begin{align}
     \nu_t = \textcolor{red}{f_{\nu}} C_{\nu} \frac{\rho k^2}{\epsilon},  \qquad
 %
-    ... + C_1 \frac{\epsilon}{k}(\textcolor{red}{f_1} P_k + P_b) 
+    ... + C_1 \frac{\epsilon}{k}\textcolor{red}{f_1} P 
     - \textcolor{red}{f_2} C_2 \rho \frac{\epsilon^2}{k} + ..
 \end{align}
 
@@ -392,6 +392,7 @@ turbulence model was needed for aerodynamics and turbomachinery. The specific
 turbulent dissipation rate $\omega$ is related to $\epsilon$ as follows:
 
 \begin{equation}
+    \label{eq:omega_epsilon}
     \omega = \frac{\epsilon}{C_{\nu} k}
 \end{equation}
 
@@ -405,22 +406,32 @@ turbulent dissipation rate $\omega$ is related to $\epsilon$ as follows:
 
 \subsubsection{Transport equations}
 The transport equations for $k$ remains the same as in equation
-\ref{eq:transport_k}. But the transport equation for $\omega$ is different:
+\ref{eq:transport_k}. But the transport equation for $\omega$ is different. As
+the notation has changed slightly, the transport equation for $k$ is also
+shown:
 
-\begin{equation}
-    \frac{\partial (\rho \omega)}{\partial t} + 
-    \nabla \cdot (\rho U \omega) =
+\begin{align}
+    \label{eq:transport_k_omega}
+    \frac{\partial (\rho k)}{\partial t} + 
+    \nabla \cdot (\rho U k) &=
     \nabla \cdot \left[ 
-        \left( \nu + \frac{\nu_t}{\sigma_{\omega}}\right) + \nabla  \omega
-    \right] + \frac{\gamma}{\nu_t} P_k - \beta \rho \omega^2
-\end{equation}
+        \left( \nu + \sigma_k \nu_t \right) + \nabla k 
+    \right] + P - \rho \epsilon \\
+%
+    \label{eq:tranport_epsilon_omega}
+    \frac{\partial (\rho \omega)}{\partial t} + 
+    \nabla \cdot (\rho U \omega) &=
+    \nabla \cdot \left[ 
+        \left( \nu + \sigma_{\omega} \nu_t \right) + \nabla  \omega
+    \right] + \frac{\gamma}{\nu_t} P - \beta \rho \omega^2
+\end{align}
 
 \noindent The constants for the Wilcox 1988 version\footnote{There a lot of
 different versions for this model} are as follows: \cite{nasatmr}
 
 \begin{align*}
-    \beta^{*}   &= 0.09    & \beta              &= 3/40  & \gamma &= 5/9\\
-    \sigma_k    &= 0.5     & \sigma_{\omega}    &= 0.5
+    \beta       &= 3/40     & \gamma            &= 5/9\\
+    \sigma_k    &= 0.5      & \sigma_{\omega}   &= 0.5
 \end{align*}
 
 
@@ -447,18 +458,134 @@ and thus gives better predictions for aerodynamics and turbomachinery.
 \subsubsection{Weaknesses}
 The biggest problem this model has is its dependence on the freestream boundary
 conditions. Even small changes can lead to drastic different skin friction
-coefficients which leads to different flow separation points.
+coefficients which leads to different flow separation points. Unfortunately, it
+is not exactly clear where this dependence is coming from.
 \cite{cfd101_k-omega}
 
 
 
 
-
-
-
-
 \subsection{$k$ - $\omega$ SST model}
+To recap, there is a model that works well far away from walls ($k$ -
+$\epsilon$) but is not suited for flows near it. And there is a model that acts
+the other way around ($k$ - $\omega$). Additionally, both models are highly
+similar. Thus the Idea of the $k$ - $\omega$ SST model is to blend both models
+and use $\epsilon$ far away from walls and the $\omega$ formulation near walls.
+Figure \ref{fig:sst_blending} shows this concept.
 
+\begin{figure}[H] \centering
+    \includegraphics[width=0.7\textwidth]{sst_blending}
+    \caption{SST blends between $k$ - $\omega$ and $k$ - $\epsilon$ where
+    appropriate \cite{cfd101_k-omega}.}
+    \label{fig:sst_blending}
+\end{figure}
+
+
+\subsubsection{Transport equations}
+It has already been established that the transport equation of $k$ is the same
+for both models (see equation \ref{eq:transport_k_omega}). When we take the
+transport equation for $\epsilon$ (eq. \ref{eq:tranport_epsilon_omega}) and
+substitute $\epsilon$ with equation \ref{eq:omega_epsilon}, we get:
+
+\begin{equation}
+    \frac{\partial (\rho \omega)}{\partial t} + 
+    \nabla \cdot (\rho U \omega) =
+    \nabla \cdot \left[ 
+        \left( \nu + \frac{\nu_t}{\sigma_{\omega}}\right) + \nabla  \omega
+    \right] + \frac{\gamma}{\nu_t} P_k - \beta \rho \omega^2 
+    \textcolor{red}{
+        + 2 \frac{\rho \sigma_{\omega 2}}{\omega} \nabla k : \nabla \omega
+    }
+\end{equation}
+
+\noindent When ignoring the additional part in red\footnote{$\nabla k : \nabla
+\omega$ stands for: $\frac{\partial k}{\partial x_j} \frac{\partial
+\omega}{\partial x_j}$}, then it is the same equation as was used to to
+transport $\omega$. When we multiply this additional term with $(1 - F_1)$, we
+can blend between the two models by varying $F_1$ from 0 ($k$ - $\epsilon$) to
+1 ($k$ - $\omega$). Of course, both models have different constants and they
+must be blended as well:
+
+\begin{equation}
+    \phi = F_1 \phi_1 + (1 - F1) \phi_2
+\end{equation}
+
+\noindent Where subscript 1 and 2 are the respective constants from each model.
+The constants for the standard Menter SST variant from 1994  are as follows:
+\cite{nasatmr}
+
+\begin{align*}
+    \gamma_1 &= \frac{\beta_1}{C_{\nu}} - 
+    \frac{\sigma_{\omega 1} \kappa^2}{\sqrt{C_{\nu}}}
+    & \gamma_2 &= \frac{\beta_2}{C_{\nu}} - 
+    \frac{\sigma_{\omega 2} \kappa^2}{\sqrt{C_{\nu}}}\\
+%
+    \sigma_{k 1}        &= 0.85  & \sigma_{k 2}         &= 1.0 \\
+    \sigma_{\omega 1}   &= 0.5   & \sigma_{\omega 2}    &= 0.856 \\
+    \beta_1             &= 0.075 & \beta_2              &= 0.0828 \\
+    \kappa              &= 0.41
+\end{align*}
+
+
+\subsubsection{Blending function}
+The blending function is computed as follows:
+
+\begin{equation}
+    F_1 = tanh(arg_1^4)
+\end{equation}
+
+\noindent Where:
+
+\begin{equation}
+    arg_1 = min \left[ max \left( 
+    \frac{\sqrt{k}}{\beta^{*} \omega d}, \frac{500 \nu}{d^2 \omega}
+    \right), 
+    \frac{4 \rho \sigma_{\omega 2} k}{CD_{k \omega} d^2}
+    \right]
+\end{equation}
+
+\noindent Where $d$ is the distance to the nearest wall and $CD_{kw}$:
+
+\begin{equation}
+    CD_{kw} = max \left( 
+    2 \rho \sigma_{\omega 2} \frac{1}{\omega} \nabla k \nabla \omega, 10^{-20} 
+    \right)
+\end{equation}
+
+At this point, we have got the $k$ - $\omega$ BST model.
+
+
+\subsubsection{Viscosity Limiter}
+ It has been found through experiments that a viscosity limiter is beneficial.
+ Thus, the computation of $\nu_t$ is modified:
+
+\begin{equation}
+    \nu_t = \frac{a_1 \rho k}{max(a_1 \omega, \Omega F_2)}
+\end{equation}
+
+\noindent Where $a_1 = 0.31$, $\Omega$ is the vorticity magnitude  and $F_2$ is
+a second blending function. It is computed as follows:
+
+\begin{equation}
+    F_2 = tanh(arg_2^2)
+\end{equation}
+
+\noindent Where:
+
+\begin{equation}
+    arg_2 = max \left( 2\frac{\sqrt{k}}{C_{\nu} \omega d},
+    \frac{500 \nu}{d^2, \omega}\right)
+\end{equation}
+
+\noindent The closer we are to the wall, the bigger $arg_2$ is (as it depends on
+this distance). The higher $arg_2$ is, the bigger $F_2$ gets. And if $F_2$ gets
+bigger, the viscosity is limited more.
+
+
+\subsubsection{Conclusion}
+This model agrees better with experiments of mildly separated flows. This
+mainly due to the viscosity limiter. Hence, it is best for external
+aerodynamics or simulations where separation is important. \cite{cfd101_sst}
 
 
 
