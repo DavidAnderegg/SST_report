@@ -475,8 +475,8 @@ Figure \ref{fig:sst_blending} shows this concept.
 
 \begin{figure}[H] \centering
     \includegraphics[width=0.7\textwidth]{sst_blending}
-    \caption{SST blends between $k$ - $\omega$ and $k$ - $\epsilon$ where
-    appropriate \cite{cfd101_k-omega}.}
+    \caption{Flat plate a zero incidence with SST blending between $k$ -
+    $\omega$ and $k$ - $\epsilon$ where appropriate \cite{cfd101_k-omega}.}
     \label{fig:sst_blending}
 \end{figure}
 
@@ -589,16 +589,116 @@ aerodynamics or simulations where separation is important. \cite{cfd101_sst}
 
 
 
-\section{Algorithmic Differentiation and the adjoint method}
-\subsection{Overview}
-briefly explain AD and adjoint. Reference to adjoint report. Also mention  
+\section{Gradient computation}
+When optimizing, we try to minimize the objective function $o(x)$ while making
+sure the constraints $c(x)$ are satisfied. The vector $x$ stands for the
+\textit{design variables (DVs)} and $o(x)$ and $c(x)$ are the \textit{functions
+of interest (FoIs)}. From a gradient perspective, it does not matter if a FoI is
+an objective or an constraint and thus we group them together in a vector:
+$f(x) = \begin{bmatrix} o(x) & c(x)\end{bmatrix}^T$. As we are interested in
+gradient based optimizations, we need to provide the Jacobian $df / dx$. There
+are a view options available: \cite{mdobook} \cite{cm1}
+
+\begin{itemize}
+    \item \textbf{Finite Differences (FD)} are the traditional approach. But
+        they are inefficient as they scale with the number of DVs which can
+        grow quite substantial in practical optimizations. Additionally, they
+        are not that accurate as the lowest possible step is limited by machine
+        precision.
+
+    \item \textbf{Complex Step (CS)} is almost the same as FD. But the step is
+        applied in the complex plane. This decouples it from the base-floating
+        point number and thus allows an almost infinitely small step without
+        running into machine precision problems. This means, CS is almost as
+        accurate as it gets, but it is still inefficient.
+
+    \item \textbf{Automatic/Algorithmic Differentiation (AD)} is a technique
+        that is known widely as \textit{back propagation} in machine learning.
+        It basically uses the chain rule in an automated and systematic manner
+        to compute the total derivatives from partial derivatives of basic
+        maths operations (e.g. Additions or multiplications). There exists a
+        \textit{forward} and \textit{backwards} mode. The forward mode scales
+        with the number of design variables and is thus as efficient as CS or
+        FD. But it is as accurate as analytic derivatives. The backwards mode
+        scales with the functions of interest. In optimizations, they are
+        usually a lot lower than the design variables. Thus the backwards mode
+        is highly efficient.
+
+    \item \textbf{Adjoint method} is, roughly spoken, an extension to AD. The
+        problem with AD for the backwards mode (which we are interested the
+        most) is, that you need to store additional memory for each maths
+        operation. This works well in machine learning because there are no
+        iterative solvers. But this is not the case here and the required
+        memory is to much. The \textit{adjoint method} bypasses this by
+        replacing the iterative solver part with a linear system which
+        needs to be solved. 
+\end{itemize}
+
+
+
+
+\subsection{Adjoint method}
+The adjoint method\footnote{Analogous to AD, there exists also a forward mode
+called \textit{direct method}} involves solving the following system (as it
+scales with the number of FoIs, a system per FoI needs to be solved.):
+
+\begin{equation}
+    \psi^T = \frac{\partial f}{\partial u} \frac{\partial r}{\partial u}^{-1}
+\end{equation}
+
+\noindent Where $\psi^T$ are the adjoint vectors, $u$ are the state variables
+the CFD solver solves for (e.g. pressure, velocity) and $r$ are the residuals.
+
+Once the adjoint vectors are obtained, the total derivative computed as
+follows:
+
+\begin{equation}
+    \frac{df}{dx} = \frac{\partial f}{\partial x} - 
+    \psi^T \frac{\partial r}{\partial x}
+\end{equation}
+
+
+\noindent To compute the partial derivatives, any method mentioned in the
+section above may be used, but is most reasonable to use AD. \cite{mdobook}
+
+
 
 
 \subsection{Verification}
-How those things can be validated 
-\subsubsection{Finite Differences}
-\subsubsection{Complex Step}
-\subsubsection{Dot Product Test}
+Accurate gradients are important as they accelerate the optimization or may
+even prevent it from converging at all. Thus, the partial and total derivatives
+need to be verified. First, lets verify the partial derivatives obtained using
+AD:
+
+\begin{enumerate}
+    \item \textbf{Compare forward derivatives against FD.} As FD is not as
+        accurate, it is not enough, but it is easy to implement (no
+        modifications needed to the code) and shows if we are in the right bulk
+        part.
+    \item \textbf{Compare forward derivatives against CS.} This is absolutely
+        needed to be sure. But it requires modification of the code and thus
+        may introduce errors (thats why step 1 is important).
+
+    \item \textbf{Dot product test} Once the forward routines are verified, we
+        can apply the dot product test (see below) to verify the backwards
+        routines as well.
+\end{enumerate}
+
+\noindent Once the partial derivatives are verified, we can try to solve the
+adjoint system. If this is done, the total derivatives may be verified (1.)
+against FD and then (2.) against CS.
+
+\subsubsection{Dot product test}
+This is simply evaluating the following equation and making sure it matches to
+a really low tolerance. In theory, it would match perfectly, but because of
+rounding errors and floating point operations, it does not.
+
+\begin{equation}
+    \psi_j^T \frac{\partial r}{\partial x_i} = 
+    \frac{\partial f_j}{\partial u} \phi i
+\end{equation}
+
+\noindent Where $i$ and $j$ represent the column and row vectors respectively.
 
 
 
