@@ -1,4 +1,93 @@
-\section{Initial code base}
+\section{Introductory thoughts}
+To start, a small introduction to ADflow's solvers, its history and the initial
+state of SST is given.
+
+In the beginning, this solver was called \textit{Standford University
+Multiblock (sumb)}. It was intended as a multiblock solver for turbomachinery.
+Later on, it was extended to be used in optimizations. For this, an adjoint
+solver was needed. As explained in section \ref{sec:gradient_computation}, the
+adjoint method needs partial derivatives which are obtained through means of
+finite differences and/or automatic differentiation. For the AD part, a tool
+called \textit{tapenade}
+\footnote{\url{http://www-tapenade.inria.fr:8080/tapenade/index.jsp}} is used.
+It automatically differentiates FORTRAN source code. But to get it working, a
+lot of the initial structure had to be changed.
+
+
+
+
+\subsection{Flow Solvers}
+ADflow has three different solvers available to solve the RANS equations:
+\textit{multigrid (MG)}, \textit{Newton-Krylov (NK)} and \textit{Approximate
+Newton-Krylov (ANK)}. It is possible to switch between
+the different solvers during a solution run. This allows to use each Solver
+when it is most efficient: initiate the simulation using multigrid, once a
+certain level of convergence is reached, engage the ANK solver an finally
+converge the last couple order of magnitudes using the NK Solver.
+\footnote{Please note that the ANK solver by itself is sufficient as a startup
+strategy and MG is not necessarily needed.}
+
+Multigrid is the baseline solver that was implemented first. It uses either the
+Runge-Kutta (RK), or the Diagonalized Diagonally-Dominant Alternating Direction
+Implicit (D3ADI) algorithm as a smoother. The turbulence model is solved in a
+decoupled manner and using the Diagonalized Alternating Direction Implicit
+(DADI) method.
+
+The Newton-Krylov solver solves the nonlinear system of governing equations by
+simply using the Newton's method. To solve this linear system, the GMRES
+algorithm is used. The turbulence variables are solved in a coupled manner and
+thus no other solvers are needed. This method is equivalent to using Euler's
+method with an infinite time step. It is most efficient when the solution is
+already at the final stages of convergence. If it is used in the early stages,
+it most likely stalls.
+
+The Approximate Newton-Krylov is similar to the NK solver in that it also uses
+Euler's method. But its time step is adjustable. At the beginning of the run,
+it is quite low and thus increases the stability. This allows it to be used
+as a startup strategy where the NK solver wouls most certainly fail. The
+lower the residual norm is, the more the time step is increased. And as such, it
+approaches Newtons' method. It is subdivided into three different sub-solvers:
+\textit{First order ANK (ANK)}, \textit{Second Order ANK (SANK)} and
+\textit{Coupled ANK (CANK)}. Please note, the combination of both
+\textit{Coupled Second-Order ANK (CSANK)} is also possible.
+
+In its base configuration (ANK) uses a first-order routine for the residual
+Jacobian and thus only affects convergence, but not the solution accuracy. Once a user defined level of
+convergence is reached, the solver switches to an exact Jacobian formulation
+(SANK). In these two stages, the turbulence model is solved in a decoupled
+manner. Once can choose between a second turbulence-only-ANK solver or the
+above mentioned DADI method. It is done this way because the turbulence models
+in RANS simulations are notoriously difficult to converge. Once again, when the
+residual norm reaches a user-defied level, the coupled mode is enganged. In
+that state, only one ANK solver remains which solve the flow and turbulence
+variables simultaneously. This helps to improve the convergence in the later
+stages. \cite{adflow_solvers}
+
+
+
+
+\subsection{Adjoint Solver}
+
+
+
+
+\subsection{Initial state of SST}
+When sumb was developed initially, a multitude of different turbulence models
+were implemented such as Spalart-Allmaras (SA) or SST. When the code was
+overhauled for optimization, only the SA model was carried over and
+differentiated. At that point SST would throw NaNs\footnote{Not a Number} and
+crash. Lately, this was fixed to a point where the DADI turbulence solver would
+work \footnote{See pull request:
+\url{https://github.com/mdolab/adflow/pull/107}}. To summarize, before this
+project started, the code for SST was there and could be solved using ANK/SANK
+and the decoupled DADI turbulence solver. But nothing was differentiated which
+means, the adjoint and coupled ANK solvers were not usable.
+
+
+
+
+
+
 
 \section{Extension of \texttt{d2Wall}}
 

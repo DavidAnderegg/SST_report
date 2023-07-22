@@ -552,7 +552,7 @@ The blending function is computed as follows:
     \right)
 \end{equation}
 
-At this point, we have got the $k$ - $\omega$ BST model.
+\noindent At this point, we have got the $k$ - $\omega$ BST model.
 
 
 \subsubsection{Viscosity Limiter}
@@ -589,7 +589,13 @@ aerodynamics or simulations where separation is important. \cite{cfd101_sst}
 
 
 
+
+
+
+
+
 \section{Gradient computation}
+\label{sec:gradient_computation}
 When optimizing, we try to minimize the objective function $o(x)$ while making
 sure the constraints $c(x)$ are satisfied. The vector $x$ stands for the
 \textit{design variables (DVs)} and $o(x)$ and $c(x)$ are the \textit{functions
@@ -699,6 +705,31 @@ rounding errors and floating point operations, it does not.
 \end{equation}
 
 \noindent Where $i$ and $j$ represent the column and row vectors respectively.
+\cite{mdobook}
+
+
+
+
+
+
+
+% \section{Solving RANS equations}
+% ADflow has three different solvers available to solve the RANS equations:
+% \textit{multigrid}, \textit{Newton Krylov} and \textit{Approximate Newton
+% Krylov}. \cite{adflow_solvers} 
+
+% Originally, only multigrid was implemented as the other two solvers need the
+% partial derivatives $\partial r / \partial u$. Since they were needed for the
+% adjoint implementation anyways, it was a logical next step to implement the
+% Newton type solvers. This part will not go into any details, but it is
+% important to state that there are two ways (in ADflow) to compute the partial
+% derivatives needed: FD and AD.  
+
+
+
+ 
+
+
 
 
 
