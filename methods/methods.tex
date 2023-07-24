@@ -52,16 +52,16 @@ approaches Newtons' method. It is subdivided into three different sub-solvers:
 \textit{Coupled Second-Order ANK (CSANK)} is also possible.
 
 In its base configuration (ANK) uses a first-order routine for the residual
-Jacobian and thus only affects convergence, but not the solution accuracy. Once a user defined level of
-convergence is reached, the solver switches to an exact Jacobian formulation
-(SANK). In these two stages, the turbulence model is solved in a decoupled
-manner. Once can choose between a second turbulence-only-ANK solver or the
-above mentioned DADI method. It is done this way because the turbulence models
-in RANS simulations are notoriously difficult to converge. Once again, when the
-residual norm reaches a user-defied level, the coupled mode is enganged. In
-that state, only one ANK solver remains which solve the flow and turbulence
-variables simultaneously. This helps to improve the convergence in the later
-stages. \cite{adflow_solvers}
+Jacobian and thus only affects convergence, but not the solution accuracy. Once
+a user defined level of convergence is reached, the solver switches to an exact
+Jacobian formulation (SANK). In these two stages, the turbulence model is
+solved in a decoupled manner. Once can choose between a second
+turbulence-only-ANK solver or the above mentioned DADI method. It is done this
+way because the turbulence models in RANS simulations are notoriously difficult
+to converge. Once again, when the residual norm reaches a user-defied level,
+the coupled mode is enganged. In that state, only one ANK solver remains which
+solve the flow and turbulence variables simultaneously. This helps to improve
+the convergence in the later stages. \cite{adflow_solvers}
 
 
 
@@ -98,8 +98,8 @@ isolation and do depended on each other, adjacent blocks need to exchange
 information. ADflow uses the \textit{halo cell} approach for this. The idea is
 to have imaginary ghost (halo) cells around each block. Then they are filled
 with the values from the adjacent blocks. Figure \ref{fig:halo_cells} shows
-this idea. One difference to the picture is that ADflow uses two layers of halo
-cells.
+this idea. ADflow can employ second order discretizations and thus needs two
+layers of halo cells.
 
 \begin{figure}[H] \centering
 \includegraphics[width=0.7\textwidth]{halo_cells}
@@ -140,7 +140,86 @@ wasteful. The cost of communication was negligible in comparison. This did not
 really change, but computing power became a lot cheaper. So if it makes AD
 easier, it is a good trade to get rid of the communication.
 
+
+
+
+
+
+
+
+\section{Changes to wall distance}
+We settled on the idea of computing $F_1$ in the halo cells instead of
+communicating it across. To do this, we need to take a closer look at $F_1$. It
+depends on $arg_1$ (eq. \ref{eq:arg1}) which also depends on $CD_{kw}$ (eq.
+\ref{eq:cdkw}). \noindent It is a bit problematic as it requires the
+derivatives $\nabla k \nabla \omega$. This means, we need even more halo cells
+to compute the halo cells. Luckily, ADflow employs only a first-order
+discretization for the turbulence model. Thus, the second layer of halo cells
+is enough to compute $CD_{kw}$ in the first halo layer.
+
+On further examination, we realize that $arg_1$ also depends on the distance to
+the nearest wall. Unfortunately, in ADflow, the distance to the nearest wall is
+not assigned nor exchanged for halo cells . Thus, this needs to be changed.
+
+
+
+
+\subsection{Wall distance computation}
+Before explaining the changes, one must briefly understand how the wall
+distance computation is done in ADflow. \footnote{The interested reader may
+take a look at report \cite{vt1} where it is explained in more detail.} It is
+important to realize that this is no easy task due to the block splitting. When
+computing the distance to the nearest wall in a cell on processor X, it is
+possible that the nearest wall lives on processor Y. 
+
+To make a long story short, ADflow first determines the which surface cell
+holds the closets point for the current cell. This information is changed and
+not updated anymore. Later, it calls a routine named
+\texttt{updateWallDistancesQuickly()}. This then actually computes the distance.
+The underlying assumption is, that a deformed mesh does not introduce lateral
+movement that would change the outcome of the first determination. 
+
+
+
+
+\subsection{Halo exchange}
+Now, we need to quickly talk about the halo exchange routine. For this, ADflow
+has two options: \texttt{whalo1(...)} and \texttt{whalo2(...)}. Please note the
+arguments were omitted for brevity. But it just takes flags that control what
+we want to exchange. E.g it is possible to only exchange the pressure, or the
+velocity, or even more together. The only difference between those functions is
+that the first only exchanges the halos in the first layer and the second
+exchanges all. As wee need both layers, \texttt{whalo2(...)} is modified. This
+has been straight forward and is not elaborated further. Please take  a look at
+the source code if you are interested in more detail.
+
+
+
+\subsection{Bringing it together}
+The easy approach would be to simply call \texttt{whalo2(...)} at the end of
+\texttt{updateWallDistancesQuickly()}. This is not possible as this function is
+AD-ed and tapenade can not handle MPI-calls. So the next obvious choice is to
+call \texttt{whalo2(...)} manually every time
+\texttt{updateWallDistancesQuickly()} was executed. When initializing, the
+distance is computed before the communication part is initialized and thus
+crashes. The final solution was that a Boolean flag is introduced:
+\texttt{exchangeWallDistanceHalos}. If it is true, the normal halo
+exchange-calls perform also the distance exchange. This works fine, but is a bit
+of a hack. The author is believes it is possible to get rid of it once he
+understands the code even better.
+
+
+
+
+
+
+
+
 \section{Algorithmic/Automatic Differentiation}
+
+
+
+
 
 \section{Verification}
 
