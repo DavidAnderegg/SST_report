@@ -378,37 +378,37 @@ correct results. But this is not the point here.
 \end{table}
 
 
-\subsubsection{Flatplate}
-The flatplate at zero incidence is a classic testsetup for basic flow
-experiments and CFD solver verification. This case is used to make sure SST
-agrees with other implementations. For this, the \textit{Turbulence Modeling
-Resource (TMR)} website maintained by NASA is really useful. It provides
-various turbulence model definitions, testcases with grids and reference data
-from other solvers. Figure \ref{fig:plate_bc} shows the flow setup and tab.
-\ref{tab:plate_mesh_sizes} list the number of cells per grid-level. All
-grids were obtained from the TMR website.
+% \subsubsection{Flatplate}
+% The flatplate at zero incidence is a classic testsetup for basic flow
+% experiments and CFD solver verification. This case is used to make sure SST
+% agrees with other implementations. For this, the \textit{Turbulence Modeling
+% Resource (TMR)} website maintained by NASA is really useful. It provides
+% various turbulence model definitions, testcases with grids and reference data
+% from other solvers. Figure \ref{fig:plate_bc} shows the flow setup and tab.
+% \ref{tab:plate_mesh_sizes} list the number of cells per grid-level. All
+% grids were obtained from the TMR website.
 
-\begin{figure}[H] \centering
-    \includegraphics[width=0.7\textwidth]{plate_bc}
-    \caption{Boundary conditions and test case overview. \cite{nasatmr}}
-    \label{fig:plate_bc}
-\end{figure}
+% \begin{figure}[H] \centering
+%     \includegraphics[width=0.7\textwidth]{plate_bc}
+%     \caption{Boundary conditions and test case overview. \cite{nasatmr}}
+%     \label{fig:plate_bc}
+% \end{figure}
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{c r r}
-        Identifier      & \# of nodes   & \# of cells \\
-        \toprule
-        L4              & 1'800         & 816 \\
-        L3              & 6'860         & 3'264 \\
-        L2              & 26'772        & 13'056 \\
-        L1              & 105'764       & 52'224 \\
-        L0              & 420'420       & 208'896 \\
+% \begin{table}[H]
+%     \centering
+%     \begin{tabular}{c r r}
+%         Identifier      & \# of nodes   & \# of cells \\
+%         \toprule
+%         L4              & 1'800         & 816 \\
+%         L3              & 6'860         & 3'264 \\
+%         L2              & 26'772        & 13'056 \\
+%         L1              & 105'764       & 52'224 \\
+%         L0              & 420'420       & 208'896 \\
 
-    \end{tabular}
-    \caption{Mesh sizes used for the flatplate testcases.}
-    \label{tab:plate_mesh_sizes}
-\end{table}
+%     \end{tabular}
+%     \caption{Mesh sizes used for the flatplate testcases.}
+%     \label{tab:plate_mesh_sizes}
+% \end{table}
 
 
 \subsubsection{2D bump}

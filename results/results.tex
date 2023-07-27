@@ -59,8 +59,12 @@ this is due to the coarse mesh and transsonic regime. This probably increases
 the sensitivity to the CFL number. During convergence, the ANK solver increases
 the CFL number based on the current relative convergence. But the high
 sensitivity makes the solver unstable and i starts to diverge. Once this is
-detected, the CFL number is lowered again. This should be avoidable, but maybe
-more tuning or even a change to the CFL-ramping algorithm is needed.
+detected, the CFL number is lowered again. Plese note that it is not as simples
+as it seems here because the convergence of the linear system for the newton
+step also influences the CFL number. The author just wants to stress that
+probably some form of coupling causes the unsteady behavior. This should be
+avoidable, but maybe more tuning or even a change to the CFL-ramping algorithm
+is needed.
 
 When looking at the modified version, a similar picture to NACA emerges. The
 strategy was the same, first use ANK with DADI and once a relative convergence
@@ -71,13 +75,130 @@ parameters had to be clipped to increase robustness at the cost of convergence.
 
 
 
-% FDPC
 
-
-\section{SST testcases}
 
 \section{Grid Convergence}
+Figure \ref{fig:gc_2d_bump} shows the grid convergence for the 2d bump testcase
+compared to data from the \textit{CFL3D} and \textit{FUN3D} CFD solvers. At
+first glace, ADflow seems to be in the right bulk part but does not completely
+agree with the reference. This difference may be explained through slightly
+different model formulations. The turbulence production term used in ADflow is
+called \textit{strain}. The author tried to converge the same case using the
+\textit{vorticity} formulation but was unable to so. The reference data was
+obtained using the \textit{SSTm} formulation. It is also possible that ADflow
+uses a slightly different version.
+
+\begin{figure}[H] \centering
+    \includegraphics[width=1.0\textwidth]{plots/gc_2d_bump_nan-fix}
+    \caption{Grid convergence for 2D bump. Reference data is from
+    \cite{nasatmr}.}
+    \label{fig:gc_2d_bump}
+\end{figure}
+
+\noindent But ignoring the discrepancies, the values seem to approach a certain
+value which is desired.
+
+
+
+
+
+
+
 
 \section{Partial derivatives}
+\subsubsection{Forward mode}
+To verify the forward partial derivatives, the 3D test case is first converged
+to a relative tolerance of $1e-14$.\footnote{In theory, the partials should be
+accurate regardless of the current convergence. But it is more valuable when
+one can show that they are accurate for a converged state as this is what we
+are after. } Once this is the case, the partials are compared against finite
+difference and complex step. Anecdotal evidence suggest SST is highly
+non-linear which is reflected in the fact that the FD partials are quite off
+compared to AD. Table \ref{tab:partials_forward} lists the derivatives with the
+relative accuracy compared to CS (stepsize was $1e-40$). Please not that the
+tolerances had to be lifted partly to $1-e9$ instead of $1-e10$. This also
+indicates that SST is highly non-linear.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l r}
+        \toprule
+        Derivative                          & Relative tolerance \\
+        \hline
+        $\partial R / \partial u$           & $\leq 1e-9$ \\
+        $\partial f / \partial u$           & $\leq 1e-9$ \\
+        $\partial F / \partial u$           & $\leq 1e-9$ \\
+        $\partial R / \partial x_{geo}$     & $\leq 1e-9$ \\
+        $\partial f / \partial x_{geo}$     & $\leq 1e-9$ \\
+        $\partial F / \partial x_{geo}$     & $\leq 1e-9$ \\
+        $\partial R / \partial x_{aero}$    & $\leq 1e-10$ \\
+        $\partial f / \partial x_{aero}$    & $\leq 1e-10$ \\
+        $\partial F / \partial x_{aero}$    & $\leq 1e-10$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Relative accuracy of forward AD partials compared to CS.}
+    \label{tab:partials_forward}
+\end{table}
+
+
+\subsubsection{Reverse mode}
+To verify the backwards partials, a dot-product test was performed. Table
+\ref{tab:partials_dotproduct_test} lists the tests  with the relative tolerance
+it was passed. The only test that did not pass was $u \rightarrow F$. As $F$
+are the nodal forces, those derivatives are only needed for aerostructural
+optimization. The reason for failing is probably the fact, that those routines
+buffer some values without recomputing. The changes to the wall distance
+probably require changes to those routines as well. Because this was not done,
+the test fails.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l r}
+        \toprule
+        Dot product test                     & Relative tolerance \\
+        \hline
+        $u \rightarrow R$                   & $\leq 1e-10$ \\
+        $u \rightarrow F$                   & $\textcolor{red}{= 2e-6}$ \\
+        $x_{geo} \rightarrow R$             & $\leq 1e-9$ \\
+        $x_{geo} \rightarrow F$             & $\leq 1e-10$ \\
+        $(u, x_{geo}) \rightarrow (du, F)$  & $\leq 1e-10$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Relative accuracy of dot product test between forwards and
+    backwards partial derivatives.}
+    \label{tab:partials_dotproduct_test}
+\end{table}
+
+
+\subsubsection{Reverse\_fast mode}
+The reverse\_fast partials are simply compared to the forwards routines. This
+is possible because the first one is a subset of the former one. Table
+\ref{tab:partials_fast} lists the relative accuracy. It obviously does not
+agree at all. This is due to time constraints as the author could not proceed
+to improve it further. But the fact that it yields a number and does not simply
+crash is already an achievement.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l r}
+        \toprule
+        backwards vs backwards\_fast        & Relative tolerance \\
+        \hline
+        $u$                                 & $\textcolor{red}{= 5.7e4}$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Relative accuracy of backwards\_fast routines compared to
+    backwards.}
+    \label{tab:partials_fast}
+\end{table}
+
+
+
+
+
+
 
 \section{Total derivatives}
+
+
+\section{Annectdotal ANK evidence}
