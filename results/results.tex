@@ -124,13 +124,15 @@ indicates that SST is highly non-linear.
     \begin{tabular}{l r}
         \toprule
         Derivative                          & Relative tolerance \\
-        \hline
+        \toprule
         $\partial R / \partial u$           & $\leq 1e-9$ \\
         $\partial f / \partial u$           & $\leq 1e-9$ \\
         $\partial F / \partial u$           & $\leq 1e-9$ \\
+        \midrule
         $\partial R / \partial x_{geo}$     & $\leq 1e-9$ \\
         $\partial f / \partial x_{geo}$     & $\leq 1e-9$ \\
         $\partial F / \partial x_{geo}$     & $\leq 1e-9$ \\
+        \midrule
         $\partial R / \partial x_{aero}$    & $\leq 1e-10$ \\
         $\partial f / \partial x_{aero}$    & $\leq 1e-10$ \\
         $\partial F / \partial x_{aero}$    & $\leq 1e-10$ \\
@@ -156,11 +158,13 @@ the test fails.
     \begin{tabular}{l r}
         \toprule
         Dot product test                     & Relative tolerance \\
-        \hline
+        \toprule
         $u \rightarrow R$                   & $\leq 1e-10$ \\
         $u \rightarrow F$                   & $\textcolor{red}{= 2e-6}$ \\
+        \midrule
         $x_{geo} \rightarrow R$             & $\leq 1e-9$ \\
         $x_{geo} \rightarrow F$             & $\leq 1e-10$ \\
+        \midrule
         $(u, x_{geo}) \rightarrow (du, F)$  & $\leq 1e-10$ \\
         \bottomrule
     \end{tabular}
@@ -183,7 +187,7 @@ crash is already an achievement.
     \begin{tabular}{l r}
         \toprule
         backwards vs backwards\_fast        & Relative tolerance \\
-        \hline
+        \toprule
         $u$                                 & $\textcolor{red}{= 5.7e4}$ \\
         \bottomrule
     \end{tabular}
@@ -199,6 +203,89 @@ crash is already an achievement.
 
 
 \section{Total derivatives}
+As described in sec. XXX, the total derivatives were verified by comparing them
+to complex step. As described in sec. XXX, ADflow may assemble the adjoint
+system using either the forwards partials or the reverse\_fast partials. Table
+\ref{tab:total_derivs} lists the relative difference of various methods
+against complex step with a stepsize of $1e-200$.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l r r r r}
+        \toprule
+        Name        & cmplx. ($h=1e-40$)   & adj. frwd. 1cpu           & 
+            adj. frwd. 6 cpus         & adj. rev. fast 6 cpus    \\
+        \toprule
+        alpha       & -1.3e-09             & -5.3e-06                  & 
+            -5.3e-06                  & \textcolor{red}{-8.0e-03} \\
+        mach        & -6.1e-08             &  2.3e-05                  &  
+            2.3e-05                  & \textcolor{red}{ 2.3e-01} \\
+        \midrule
+        span \#0    & -2.0e-09             &\textcolor{red}{ 4.0e-04}  &
+            \textcolor{red}{-9.0e-04}  & \textcolor{red}{-1.0e-02} \\        
+        twist \#0   &  9.3e-09             &\textcolor{red}{-1.0e-03}  &
+            9.6e-05                    & \textcolor{red}{-1.4e-02} \\        
+        shape \#0   & -5.3e-07             &\textcolor{red}{ 5.8e-02}  &
+            \textcolor{red}{ 5.6e-02}  & \textcolor{red}{ 1.2e-00} \\         
+        \bottomrule
+    \end{tabular}
+    \caption{Relative difference of gradients compared to compplex step
+    (stepsize = 1e-200). The function of interest is $C_l$. When the DVs are a
+    vector (e.g span), only the first variable is listed.}
+    \label{tab:total_derivs}
+\end{table}
+
+\noindent First, lets look at the forward routines with 1 and 6 cpus. The first
+two variables are \textit{aerodynamic}, meaning do not control the geometry. It
+appears that they stay the same on 1 or 6 cpus. Their relative accuracy is
+approx 1e-5. This is relatively low, but may be explained through the high
+non-linearity of SST. It is also important to realize that those are the first
+tries. This means, there will probably be better options and/or methods and
+thus a higher accuracy should be expected in the future. When looking at the
+\textit{geometric} derivatives, it becomes clear that they differ with the
+number of cpus. Also the are less accurate than the geometric ones. This
+probably indicates a problem with modification done to the wall distance
+exchange routines. This should be fixable with only a bit more time.
+
+As already indicated with the partial reverse\_fast routines, the total
+derivatives are also completely wrong. But once again, the fact that a number
+was obtainable is already an achievement. This should also be fixable and only
+needs a bit more time.
 
 
-\section{Annectdotal ANK evidence}
+
+
+
+
+
+
+\section{Summary}
+The results show that a prototype state was achived. SST does converge using
+the coupled ANK solver and also gradients can be obtained. But of course, there
+are still some bugs present. Some other results were more anecdotal and could
+not be proven properly. The following list shows the insights gained through
+this project.
+
+\begin{itemize}
+    \item SST is probably highly non-linear.
+
+    \item ANK does work using the AD preconditioner. But sometimes NaNs appear.
+
+    \item ANK does not work using FD preconditioner (probably due high
+        non-lineary of SST).
+
+    \item Physicality check for ANK needs to be adjusted to SST.
+
+    \item Prototype adjoint is running.
+
+    \item Aerodynamic derivatives using forward routines are accurate.
+
+    \item Geometric derivatives using forward routines are not accurate.
+
+    \item There is probably a bug in the halo exchange of the wall distance in
+        the backwards routines.
+
+    \item Derivatives using reverse\_fast routines are not accurate at all.
+
+    \item SST appears to be implemented correctly.
+\end{itemize}
