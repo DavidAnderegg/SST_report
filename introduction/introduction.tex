@@ -1,9 +1,18 @@
-High fidelity optimization using gradient based approaches have become more
-and more popular as they do not suffer from the \textit{curse of
-dimensionality}. This allows them to have a much higher number of
-design variables (dvs) compared to genetic optimization
-approaches. This report describes how the SST turbulence model was modified to
-work in ADflow for simulation and gradient computation.
+High fidelity optimization using gradient based approaches have become more and
+more popular. This may be explained through the fact that they do not suffer
+from the \textit{curse of dimensionality}. This allows them to have a much
+higher number of design variables (dvs) compared to alternatives such as genetic
+optimization approaches. The drawback is, of course, one must compute the
+gradients in an efficient manner. The \textit{MACH-Aero} Framework offers a set
+of tools for gradient based high-fidelity optimization. Part of this Framework
+is a CFD solver called \textit{ADflow} which has only one working turbulence
+model. This project aims to change that through the implementation of the $k$ -
+$\omega$ \textit{Shear Stress Transport (SST)} model.
+
+
+
+
+
 
 
 
@@ -19,7 +28,6 @@ ADflow.} and the \textit{adjoint method}. Most of ADflow is written in Fortran.
 But it is interfaced in Python. This means, the heavy lifting is done in a fast
 language, but the regular user has the benefits of an object-oriented high
 level interpreter language.
-
  
 In optimization, a lot of simulations are necessary until an optimal design is
 found. It is also highly important to always get an objective value for each
@@ -35,20 +43,25 @@ When the solver was still called sumb, various turbulence models such as
 Spalart-Allmaras, Spalart-Allmaras with Edwards Modification, $k$ - $\omega$
 Wilox, $k$ - $\omega$ Wilox modified, $k$ - $\tau$, v2-f and Menter SST were
 implemented. The subsequent modification for optimizations changed the
-structure dramatically and only the SA model was carried over.
+structure dramatically and only the SA model was carried over. But this means,
+a skeleton implementation of SST is available and only the structural changes
+need to be incorporated.
 
 
 \section{Goals}
 As stated above, the legacy code for SST is still available but does not really
 work anymore. The goal for this project is to get it working for simulation and
-optimization. The necessary sub-steps may be summarized as follows:
+optimization. The necessary sub-steps may be summarized as follows. Please note
+some in-depth knowledge is needed to understand them. But this will be
+explained in later sections of this report:
 
 \begin{enumerate}
     \item Get the current SST model running using a legacy DADI-method.
 
     \item Modify it in such a way that it is automatically differentiate-able.
 
-    \item Actually differentiate it through AD
+    \item Actually differentiate it through \textit{Automatic/Algorithmic
+        Differentiation (AD)}.
 
     \item Make sure the partial AD derivatives are correct. 
 
@@ -58,8 +71,12 @@ optimization. The necessary sub-steps may be summarized as follows:
 
     \item Get the adjoint Solver working.
 
-    \item Test and verify the modified gradients.
+    \item Test and verify the total gradients.
 \end{enumerate}
+
+
+
+
 
 
 
@@ -69,6 +86,11 @@ Part of this project is a code contribution to ADflow and a setup of test
 cases, both can be found on GitHub under those links:\\
 
 \begin{tabular}{l l}
-  ADflow Pull Request & \url{LINK_TO_PR} \\
-  Test cases & \url{https://github.com/DavidAnderegg/SST_rough_testcases}
+    ADflow Pull Request &
+    \url{https://github.com/mdolab/adflow/pull/301}\footnotemark \\
+
+    Test cases & \url{https://github.com/DavidAnderegg/SST_rough_testcases}
 \end{tabular}
+
+
+\footnotetext{The commit at the time of writing was: \texttt{361bf3e9a2e1e4fee177becfdc94f1e48809fa2e}}
