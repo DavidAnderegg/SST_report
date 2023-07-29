@@ -249,8 +249,8 @@ of the six Reynolds-stresses has reduced to calculating $\nu_{t}$ and $k$.
 \cite{leschziner2015statistical}
 
 \paragraph{Turbulent kinetic energy}
-This is the mean \textit{kinetic energy} per unit mass associated with eddies
-in turbulent flows. It is defined as half the sum of variances of the velocity
+is the mean \textit{kinetic energy} per unit mass associated with eddies in
+turbulent flows. It is defined as half the sum of variances of the velocity
 components:
 
 \begin{equation}
@@ -270,12 +270,9 @@ components:
 
 \section{Turbulence models}
 \label{sec:turb_models}
-The SST model is a mix between the $k$ - $\epsilon$ and $k$ - $\omega$
-turbulence models. Because of that, both are explained in this section. 
-
-\paragraph{Specific turbulence dissipation rate $\omega$}
-This is basically $\epsilon$ but divided by $C_{\nu} k$ where $C_{\nu}$ equals
-$0.09$.
+The SST model is a mix between earlier models. It basically blends between the
+$k$ - $\epsilon$ and $k$ - $\omega$ turbulence models. As such, they are
+introduced first.
 
 
 
@@ -287,6 +284,8 @@ dissipation rate ($\epsilon$) \footnote{The rate at which $k$ is converted into
 thermal energy through viscosity}. To apply the Boussinesq-assumption, $k$ and
 $\nu_t$ are needed. The first one is solved for directly and the second one is
 calculated as follows:
+
+
 
 \begin{equation}
     \label{eq:k_epsilon_nu_t}
@@ -314,18 +313,21 @@ calculated as follows:
 \end{align}
 
 \noindent Where $P$ is the production due to mean velocity shear and buoyancy.
-The remaining constants have been derived from experiments and may change.
-Originally, they were defined as follows:
+The symbol $\nabla$ represents the spatial derivatives $\partial / \partial
+x_i$ where $i$ is either in $x$, $y$ or $z$ direction. The remaining constants
+have been derived from experiments and may change. Originally, they were
+defined as follows:
 
 \begin{align*}
     C_1 &= 1.55         & C_2               &= 2.0  & C_{\nu} &= 0.09\\
     \sigma_k &= 1.0     & \sigma_{\epsilon} &= 1.3
 \end{align*}
 
-\noindent This form of the model is called the \textit{high-Reynolds-number
-form}. As its name suggests, its prediction is poor near walls where the
-Reynolds-number is low. This is due to blocking effects of the wall in the
-viscous sub-layer that lowers the dissipation. 
+\noindent The variant of this model is referred to as the
+\textit{high-Reynolds-number} form. As its name implies, it performs poorly in
+predicting results near walls where the Reynolds number is low. This deficiency
+arises due to the blocking effects caused by the wall in the viscous sub-layer,
+which reduces dissipation.
 
 
 \subsubsection{Modifications for near wall flows}
@@ -356,11 +358,11 @@ as follows:
 \end{equation}
 
 \noindent The damping function $f_{\nu}$ tends to be 1 far from the wall
-because $Re_T$ tends to be high there. Close to the wall, $f_{\nu}$, where
-$Re_T$ is low, goes towards 0 and thus the effects of the eddy viscosity
-vanish. The original authors did not see an improvement for $f_1$ and therefore
-left it at 1. The function $f_2$ is applied to the dissipation of $\epsilon$
-and consequently lowers it near the wall it.
+because $Re_T$ tends to be high there. Close to the wall, where $Re_T$ is low,
+$f_{\nu}$ goes towards 0 and thus the effects of the eddy viscosity vanish. The
+original authors did not see an improvement for $f_1$ and therefore left it at
+1. The function $f_2$ is applied to the dissipation of $\epsilon$ and
+consequently lowers it near the wall it.
 
 
 \subsubsection{Boundary conditions}
@@ -388,8 +390,9 @@ even worse. \cite{cfd101_k-epsilon}
 
 \subsection{$k$ - $\omega$ model}
 Because of the shortcomings mentioned in the section before, a better
-turbulence model was needed for aerodynamics and turbomachinery. The specific
-turbulent dissipation rate $\omega$ is related to $\epsilon$ as follows:
+turbulence model was needed for aerodynamics and turbomachinery. This model
+tried to address this by modeling the specific turbulent dissipation rate
+$\omega$ instead of $\epsilon$. They are related as follows:
 
 \begin{equation}
     \label{eq:omega_epsilon}
@@ -406,9 +409,9 @@ turbulent dissipation rate $\omega$ is related to $\epsilon$ as follows:
 
 \subsubsection{Transport equations}
 The transport equations for $k$ remains the same as in equation
-\ref{eq:transport_k}. But the transport equation for $\omega$ is different. As
-the notation has changed slightly, the transport equation for $k$ is also
-shown:
+\ref{eq:transport_k}. But the transport equation for $\epsilon$ is replaced by
+one for $\omega$. As the notation has changed slightly, the transport equation
+for $k$ is also shown:
 
 \begin{align}
     \label{eq:transport_k_omega}
@@ -438,28 +441,27 @@ different versions for this model} are as follows: \cite{nasatmr}
 \subsubsection{Boundary conditions}
 The boundary conditions for the wall are equal to the $k$ - $\epsilon$ model.
 As there are many different versions, it is not quite clear what the correct
-values for the farfield are. But a low value, maybe even 0, seems reasonable as
-there should not be much turbulence far away from an aircraft for example.
-\cite{cfd101_k-omega}
+values for the farfield would be. \cite{nasatmr} suggest that the ones for the
+SST model should be used (see section XXX). \cite{cfd101_k-omega}
 
 \begin{align*}
     k_{w}        &= 0           &\epsilon_{w}       &= 0 \\
-    k_{\infty}   &\approx 0     &\epsilon_{\infty}  &\approx 0 \\
 \end{align*}
 
 
 \subsubsection{Differences to $k$ - $\epsilon$}
-Both models are similar, but the $k$ - $\omega$ model does not need damping
-functions which are not accurate for adverse pressure gradients. Because of
-that, the $k$ - $\omega$ model is a lot better for flows inside boundary layers
-and thus gives better predictions for aerodynamics and turbomachinery.
+While both models share similarities, the $k$ - $\omega$ model stands out by
+not requiring inaccurate damping functions, making it more suitable for adverse
+pressure gradients. Consequently, the $k$ - $\omega$ model significantly
+outperforms the other model for flows inside boundary layers, leading to
+improved predictions in the fields of aerodynamics and turbomachinery.
 
 
 \subsubsection{Weaknesses}
-The biggest problem this model has is its dependence on the freestream boundary
+Unfortunately, this models solution highly depends on the freestream boundary
 conditions. Even small changes can lead to drastic different skin friction
-coefficients which leads to different flow separation points. Unfortunately, it
-is not exactly clear where this dependence is coming from.
+coefficients. This in turn may lead to different flow separation points.
+Unfortunately, it is not exactly clear where this dependence is coming from.
 \cite{cfd101_k-omega}
 
 
@@ -470,8 +472,9 @@ To recap, there is a model that works well far away from walls ($k$ -
 $\epsilon$) but is not suited for flows near it. And there is a model that acts
 the other way around ($k$ - $\omega$). Additionally, both models are highly
 similar. Thus the Idea of the $k$ - $\omega$ SST model is to blend both models
-and use $\epsilon$ far away from walls and the $\omega$ formulation near walls.
-Figure \ref{fig:sst_blending} shows this concept.
+in such a way that the $\epsilon$ formulation is used far away from walls and
+the $\omega$ formulation is used near walls. Figure \ref{fig:sst_blending}
+shows this concept.
 
 \begin{figure}[H] \centering
     \includegraphics[width=0.7\textwidth]{sst_blending}
@@ -582,12 +585,12 @@ a second blending function. It is computed as follows:
 
 \noindent The closer we are to the wall, the bigger $arg_2$ is (as it depends on
 this distance). The higher $arg_2$ is, the bigger $F_2$ gets. And if $F_2$ gets
-bigger, the viscosity is limited more.
+bigger, the viscosity is limited more and more.
 
 
 \subsubsection{Conclusion}
 This model agrees better with experiments of mildly separated flows. This
-mainly due to the viscosity limiter. Hence, it is best for external
+is mainly due to the viscosity limiter. Hence, it is best for external
 aerodynamics or simulations where separation is important. \cite{cfd101_sst}
 
 
@@ -601,12 +604,13 @@ aerodynamics or simulations where separation is important. \cite{cfd101_sst}
 \label{sec:gradient_computation}
 When optimizing, we try to minimize the objective function $o(x)$ while making
 sure the constraints $c(x)$ are satisfied. The vector $x$ stands for the
-\textit{design variables (DVs)} and $o(x)$ and $c(x)$ are the \textit{functions
-of interest (FoIs)}. From a gradient perspective, it does not matter if a FoI is
-an objective or an constraint and thus we group them together in a vector:
-$f(x) = \begin{bmatrix} o(x) & c(x)\end{bmatrix}^T$. As we are interested in
-gradient based optimizations, we need to provide the Jacobian $df / dx$. There
-are a view options available: \cite{mdobook} \cite{cm1}
+\textit{design variables (DVs)}. From an outside perspective, the objective
+$o(x)$ and constraints $c(x)$ are the same in the sense that we need to provide
+a function value an its gradients. The distinction only happens at the
+optimizer level. Thus, they are are called \textit{Functions of Interest (FoI)}
+or $f(x) = \begin{bmatrix} o(x) & c(x)\end{bmatrix}^T$. Therefore, the
+gradients we are after are $d f / d x$. To obtain it, we have a view different
+options available: \cite{mdobook}
 
 \begin{itemize}
     \item \textbf{Finite Differences (FD)} are the traditional approach. But
@@ -624,23 +628,26 @@ are a view options available: \cite{mdobook} \cite{cm1}
     \item \textbf{Automatic/Algorithmic Differentiation (AD)} is a technique
         that is known widely as \textit{back propagation} in machine learning.
         It basically uses the chain rule in an automated and systematic manner
-        to compute the total derivatives from partial derivatives of basic
-        maths operations (e.g. Additions or multiplications). There exists a
-        \textit{forward} and \textit{backwards} mode. The forward mode scales
-        with the number of design variables and is thus as efficient as CS or
-        FD. But it is as accurate as analytic derivatives. The backwards mode
-        scales with the functions of interest. In optimizations, they are
-        usually a lot lower than the design variables. Thus the backwards mode
-        is highly efficient.
+        to compute the total derivatives from partial derivatives based on
+        basic maths operations (e.g. Additions or multiplications). There
+        exists a \textit{forward} and \textit{backwards} mode. The forward mode
+        computes the derivative $d f / d x$ and scales with the number of
+        design variables. Thus, it is as efficient as CS or FD. But it is as
+        accurate as analytic derivatives are. The backwards mode computes the
+        same derivative but scales with the number of FoIs. In practical
+        optimizations, the number of FoIs is usually a lot lower than the
+        number of DVs. Thus the backwards mode is more efficient and highly
+        desirable.
 
     \item \textbf{Adjoint method} is, roughly spoken, an extension to AD. The
         problem with AD for the backwards mode (which we are interested the
-        most) is, that you need to store additional memory for each maths
+        most) is, that you need to store additional memory for each math
         operation. This works well in machine learning because there are no
-        iterative solvers. But this is not the case here and the required
-        memory is to much. The \textit{adjoint method} bypasses this by
-        replacing the iterative solver part with a linear system which
-        needs to be solved. 
+        iterative solvers. But this is not the case here and the memory
+        required is just to much. The \textit{adjoint method} bypasses this by
+        replacing part, where an iterative solver is needed,  with a linear
+        system which needs to be solved. So the trade is less memory footprint
+        in exchange for more computing power. A trade that is well worth.
 \end{itemize}
 
 
@@ -658,7 +665,7 @@ scales with the number of FoIs, a system per FoI needs to be solved.):
 \noindent Where $\psi^T$ are the adjoint vectors, $u$ are the state variables
 the CFD solver solves for (e.g. pressure, velocity) and $r$ are the residuals.
 
-Once the adjoint vectors are obtained, the total derivative computed as
+Once the adjoint vectors are obtained, the total derivative can be computed as
 follows:
 
 \begin{equation}
@@ -672,21 +679,41 @@ section above may be used, but is most reasonable to use AD. \cite{mdobook}
 
 
 
+\subsection{Direct mode}
+As said before, there also exists an 'opposite' mode to adjoint, it is called
+\textit{direct mode}. First, we need to solve the direct vectors:
+
+\begin{equation}
+    \phi = \frac{\partial r}{\partial x} \frac{\partial r}{\partial u}^{-1}
+\end{equation}
+
+\noindent Then, we can use it to obtain the total derivatives:
+
+\begin{equation}
+    \frac{df}{dx} = \frac{\partial f}{\partial x} -
+    \phi \frac{\partial f}{\partial u}
+\end{equation}
+
+\noindent This mode is less desirable as it depends on the number of DVs, but
+it comes in handy for verification of the adjoint method.
+
+
+
 
 \subsection{Verification}
 Accurate gradients are important as they accelerate the optimization or may
 even prevent it from converging at all. Thus, the partial and total derivatives
-need to be verified. First, lets verify the partial derivatives obtained using
-AD:
+need to be verified. As the total derivatives depend on the partial ones, it
+makes sense to verify them first:
 
 \begin{enumerate}
     \item \textbf{Compare forward derivatives against FD.} As FD is not as
         accurate, it is not enough, but it is easy to implement (no
-        modifications needed to the code) and shows if we are in the right bulk
-        part.
+        modifications needed to the code) and shows that we are in the right
+        bulk part.
     \item \textbf{Compare forward derivatives against CS.} This is absolutely
         needed to be sure. But it requires modification of the code and thus
-        may introduce errors (thats why step 1 is important).
+        may introduce errors.
 
     \item \textbf{Dot product test} Once the forward routines are verified, we
         can apply the dot product test (see below) to verify the backwards
@@ -698,9 +725,10 @@ adjoint system. If this is done, the total derivatives may be verified (1.)
 against FD and then (2.) against CS.
 
 \subsubsection{Dot product test}
-This is simply evaluating the following equation and making sure it matches to
-a really low tolerance. In theory, it would match perfectly, but because of
-rounding errors and floating point operations, it does not.
+Sometimes, it is only possible to verify the forward mode against CS, but we
+are more interested in the other one. In such a situation, the
+\textit{dot-product test} comes in handy as it provides a relation ship between
+both modes:
 
 \begin{equation}
     \psi_j^T \frac{\partial r}{\partial x_i} = 
@@ -708,10 +736,9 @@ rounding errors and floating point operations, it does not.
 \end{equation}
 
 \noindent Where $i$ and $j$ represent the column and row vectors respectively.
-\cite{mdobook}
-
-
-
+When both sides of the equation match to a tolerance that is slightly higher
+than machine precision, we can be confident that the reverse (adjoint) method
+has been implemented correctly.\cite{mdobook}
 
 
 
@@ -729,8 +756,45 @@ rounding errors and floating point operations, it does not.
 % derivatives needed: FD and AD.  
 
 
+\section{Netwons method for residual equations}
+Usually, the RANS equations are solved using a "dumb" algorithm such as
+\textit{jacobi iteration}. It is used to solve a linear system such as:
 
+\begin{equation}
+    \label{eq:cfd_system}
+    Au = b
+\end{equation}
+
+\noindent Where $u$ are the state variables (such as pressure and velocity). $b$
+are the sources, an $A$ is the state matrix. As this is an iterative approach,
+the solutions gets better and better the longer the algorithm runs. This means,
+we need an criteria to stop. For this, we use the residual formulation:
+
+\begin{equation}
+    R(u_n) = b - Au_n 
+\end{equation}
  
+\noindent Where $n$ represents the value of the current iteration. Once the
+residual value reaches a threshold, we stop.
+
+When looking at the partials that are needed for the adjoint method, we realize
+that we already compute the partials $\partial r / \partial u = R'(u)$. This
+comes in handy as it can be used in Newtons method for the solution of equation
+\ref{eq:cfd_system}:
+
+\begin{equation}
+    u_{n+1} = u_n - \frac{R(u_n)}{R'(u_n)}
+\end{equation}
+
+\noindent Newtons method does converge faster than the before mentioned "dumb"
+approaches. But it is usually not implemented as the effort to obtain $R'(u)$
+is not considered worth the profit. But we are interested in gradient
+computation for optimizations and thus need the partials anyways. So it makes
+sense to use Newtons method "free of charge". This is exactly what ADflow does
+with its \textit{Newton-Krylov (NK)} and \textit{Approximate Newton-Krylov
+(ANK)} solvers. \textbf{ADD CITATION}
+
+
 
 
 
