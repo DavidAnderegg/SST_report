@@ -1,8 +1,9 @@
 \section{Solver Convergence}
 \subsubsection{NACA0012}
 Figure \ref{fig:sc_NACA0012} shows the solver convergence for the NACA0012
-testcase. The baseline implementation and the final state when writing this
-report (modified) is shown. Both states were run once with 1 and 6 cpus.
+testcase. The baseline implementation (marked as \textit{base}) and the final
+state when writing this report (marked with \textit{modified}) is shown. Both
+states were run once with 1 and 6 cpus.
 
 \begin{figure}[H] \centering
     \includegraphics[width=1.0\textwidth]{plots/sc_NACA0012}
@@ -13,15 +14,15 @@ report (modified) is shown. Both states were run once with 1 and 6 cpus.
 \noindent Lets take a look at the baseline implementation first. It was
 obtained using the ANK solver and a decoupled DADI solver for the turbulence
 model. For the turbulence model, a total of 20 sub iterations were used. When
-looking at the functions values (top row), it can be seen that 1 and 6 cpus
+looking at the function values (top row), it can be seen that 1 and 6 cpus
 reach the same value. But 6 cpus need more iterations. It is not quite clear
 what causes this, but it is a known phenomenon for low cpu counts and vanishes
 when this number is increased. Production runs usually require tens or even
 hundrets of cpus and thus this is not considered detrimental.
 
 
-Now, lets look at the modified curves. Here, SST was differentiated and the
-turbulence ANK and fully coupled CANK solvers are available. Annectdotal
+Now, lets look at the modified implementation. Here, SST was differentiated and
+the turbulence ANK and fully coupled CANK solvers are available. Annectdotal
 evidence suggest SST is highly non-linear. This is especially true for the
 inital stages of convergence. Due to this\footnote{The author believes the ANK
 solver does some finite-differencing for some terms under the hood.}, the
@@ -41,7 +42,7 @@ Figure \ref{fig:sc_RAE2822} shows a similar convergence plot for the RAE2822
 testcase. Once again, the baseline and modified version with each 1 and 6 cpus
 is plotted. It is important to note that this case is somewhat hard as it lies
 in the transsonic regimes where shocks appear. But at the same time, it is even
-coarser than the naca case which makes it hard to resolve them properly.
+coarser than the NACA case which makes it hard to resolve the shocks properly.
 
 \begin{figure}[H] \centering
     \includegraphics[width=1.0\textwidth]{plots/sc_RAE2822}
@@ -49,22 +50,24 @@ coarser than the naca case which makes it hard to resolve them properly.
     \label{fig:sc_RAE2822}
 \end{figure}
 
-\noindent First, lets glance ath the baseline. This has also been obtained
+\noindent First, lets glance at the baseline. This has also been obtained
 using the ANK solver for the flow variables and the DADI solver for the
 decoupled turbulence variables. A similar pattern to the NACA
 testcase appears: 1 cpu takes only half the iterations of what 6 cpus need.
-But, the converged values are the same. When comparing the general line pattern
-to the NACA testcase, it appears to be more 'wiggly' here. The author belieaves
-this is due to the coarse mesh and transsonic regime. This probably increases
-the sensitivity to the CFL number. During convergence, the ANK solver increases
-the CFL number based on the current relative convergence. But the high
-sensitivity makes the solver unstable and i starts to diverge. Once this is
-detected, the CFL number is lowered again. Plese note that it is not as simples
-as it seems here because the convergence of the linear system for the newton
-step also influences the CFL number. The author just wants to stress that
-probably some form of coupling causes the unsteady behavior. This should be
-avoidable, but maybe more tuning or even a change to the CFL-ramping algorithm
-is needed.
+But, the converged values are the same. 
+
+When looking at the general line pattern and comparing it to the NACA testcase,
+it appears to be more 'wiggly'. The author believes this is due to SST being
+highly non-linear which is exaggerated by the appearances of transsonic shocks.
+This leads to a high sensitivity to the CFL number. The ANK solver uses a
+CFL-ramping algorithm that increases the CFL number steadily the closer to
+convergence it is. This ramping algorithm is not dumb and uses a smart
+formulation that also reduces the CFL number when the ANK solver has problems
+solving the linear system for the current step. The author believes herein lies
+the problem: the high non-linearity of SST and the fact that this
+ramping-algorithm is tuned for SA. This leads to a coupling where the ANK
+solver would increase the CFL number to much and start diverging. Once this is
+detected, the CFL number is lowered once again an convergence continues. 
 
 When looking at the modified version, a similar picture to NACA emerges. The
 strategy was the same, first use ANK with DADI and once a relative convergence
@@ -82,11 +85,13 @@ Figure \ref{fig:gc_2d_bump} shows the grid convergence for the 2d bump testcase
 compared to data from the \textit{CFL3D} and \textit{FUN3D} CFD solvers. At
 first glace, ADflow seems to be in the right bulk part but does not completely
 agree with the reference. This difference may be explained through slightly
-different model formulations. The turbulence production term used in ADflow is
-called \textit{strain}. The author tried to converge the same case using the
-\textit{vorticity} formulation but was unable to so. The reference data was
-obtained using the \textit{SSTm} formulation. It is also possible that ADflow
-uses a slightly different version.
+different model formulations and production terms. Usually, a formulation know
+as \textit{vorticity} is used. The author tried to converge this testcase using
+it but was unable to do so. So the results shown where obtained using the
+\textit{strain} turbulence production formulation. It is also not completely
+clear what version of SST was implemented in ADflow which might skew the
+results even more. The reference data was obtained using the \textit{SSTm}
+formulation. 
 
 \begin{figure}[H] \centering
     \includegraphics[width=1.0\textwidth]{plots/gc_2d_bump_nan-fix}
@@ -95,9 +100,8 @@ uses a slightly different version.
     \label{fig:gc_2d_bump}
 \end{figure}
 
-\noindent But ignoring the discrepancies, the values seem to approach a certain
-value which is desired.
-
+\noindent But ignoring the discrepancies, one can observe that the values
+appear to smoothly approach a limit.
 
 
 
@@ -114,11 +118,9 @@ one can show that they are accurate for a converged state as this is what we
 are after. } Once this is the case, the partials are compared against finite
 difference and complex step. Anecdotal evidence suggest SST is highly
 non-linear which is reflected in the fact that the FD partials are quite off
-compared to AD. Table \ref{tab:partials_forward} lists the derivatives with the
-relative accuracy compared to CS (stepsize was $1e-40$). Please not that the
-tolerances had to be lifted partly to $1-e9$ instead of $1-e10$. This also
-indicates that SST is highly non-linear.
-
+compared to AD (The maximum observed difference was in the order of $1e2$).
+Table \ref{tab:partials_forward} lists the derivatives with the relative
+accuracy compared to CS (stepsize was $1e-40$). 
 \begin{table}[H]
     \centering
     \begin{tabular}{l r}
@@ -142,16 +144,22 @@ indicates that SST is highly non-linear.
     \label{tab:partials_forward}
 \end{table}
 
+\noindent This exact testcase is used in regression test that make sure new
+features do not break existing ones. Usually a tolerance of $1e-10$ is need to
+pass this test. But due to the non-linearity of SST, this had to be lifted to
+$1e-9$. Of course, this is only lifted for SST and the other turbulence models
+still need to pass $1e-10$.
+
 
 \subsubsection{Reverse mode}
-To verify the backwards partials, a dot-product test was performed. Table
-\ref{tab:partials_dotproduct_test} lists the tests  with the relative tolerance
-it was passed. The only test that did not pass was $u \rightarrow F$. As $F$
-are the nodal forces, those derivatives are only needed for aerostructural
-optimization. The reason for failing is probably the fact, that those routines
-buffer some values without recomputing. The changes to the wall distance
-probably require changes to those routines as well. Because this was not done,
-the test fails.
+To verify the backwards partials, a dot-product test was performed. It is also
+part of the regression test-suite. Table \ref{tab:partials_dotproduct_test}
+lists each test with the relative tolerance it achieved. The only test that
+did not pass was $u \rightarrow F$. As $F$ are the nodal forces, those
+derivatives are only needed for aerostructural optimization. The reason for
+failing is probably the fact, that those routines buffer some values without
+recomputing. The changes to the wall distance probably require changes to those
+buffered routines as well. As this was not done, the test fails.
 
 \begin{table}[H]
     \centering
@@ -175,12 +183,12 @@ the test fails.
 
 
 \subsubsection{Reverse\_fast mode}
-The reverse\_fast partials are simply compared to the forwards routines. This
-is possible because the first one is a subset of the former one. Table
-\ref{tab:partials_fast} lists the relative accuracy. It obviously does not
-agree at all. This is due to time constraints as the author could not proceed
-to improve it further. But the fact that it yields a number and does not simply
-crash is already an achievement.
+The regression test for the reverse\_fast partials simply compares them to the
+forwards routines. This is possible because the fast routines are a subset of
+the normal ones. Table \ref{tab:partials_fast} lists the relative accuracy. It
+obviously does not agree at all. Unfortunately, the author did not have enough
+time to properly debug this. But the fact that it yields a number and does not
+simply crash is already an achievement.
 
 \begin{table}[H]
     \centering
@@ -207,7 +215,7 @@ As described in sec. XXX, the total derivatives were verified by comparing them
 to complex step. As described in sec. XXX, ADflow may assemble the adjoint
 system using either the forwards partials or the reverse\_fast partials. Table
 \ref{tab:total_derivs} lists the relative difference of various methods
-against complex step with a stepsize of $1e-200$.
+compared against complex step with a stepsize of $1e-200$.
 
 \begin{table}[H]
     \centering
@@ -236,22 +244,24 @@ against complex step with a stepsize of $1e-200$.
 \end{table}
 
 \noindent First, lets look at the forward routines with 1 and 6 cpus. The first
-two variables are \textit{aerodynamic}, meaning do not control the geometry. It
-appears that they stay the same on 1 or 6 cpus. Their relative accuracy is
-approx 1e-5. This is relatively low, but may be explained through the high
-non-linearity of SST. It is also important to realize that those are the first
-tries. This means, there will probably be better options and/or methods and
-thus a higher accuracy should be expected in the future. When looking at the
-\textit{geometric} derivatives, it becomes clear that they differ with the
-number of cpus. Also the are less accurate than the geometric ones. This
-probably indicates a problem with modification done to the wall distance
-exchange routines. This should be fixable with only a bit more time.
+two variables are \textit{aerodynamic}, which means that they do not control
+the geometry. It appears that they stay the same on 1 or 6 cpus. Their relative
+accuracy is approx 1e-5. This is relatively low, but may be explained through
+the high non-linearity of SST. It is also important to realize that this is
+the first guesses into the blue regarding options and tuning. One can probably
+expect a higher accuracy once more time is spend on the problem and the correct
+options are found.
+
+When looking at the \textit{geometric} derivatives (such as span, twist and
+shape), it becomes clear that they depend on the number of cpus. Also, they are
+less accurate than the geometric ones. This probably indicates a problem with
+the modification done to the wall distance exchange routines. Due to time
+constraints, it was not possible to fix it.
 
 As already indicated with the partial reverse\_fast routines, the total
 derivatives are also completely wrong. But once again, the fact that a number
-was obtainable is already an achievement. This should also be fixable and only
-needs a bit more time.
-
+was obtainable is already an achievement. It is expected that this will be
+fixed once more time is spent on the problem.
 
 
 
@@ -263,8 +273,8 @@ needs a bit more time.
 The results show that a prototype state was achived. SST does converge using
 the coupled ANK solver and also gradients can be obtained. But of course, there
 are still some bugs present. Some other results were more anecdotal and could
-not be proven properly. The following list shows the insights gained through
-this project.
+not be proven scientifically in this project. The following list summarizes the
+insights (anecdotal and proven) gained through the course of this project.
 
 \begin{itemize}
     \item SST is probably highly non-linear.
