@@ -743,20 +743,12 @@ has been implemented correctly.\cite{mdobook}
 
 
 
-% \section{Solving RANS equations}
-% ADflow has three different solvers available to solve the RANS equations:
-% \textit{multigrid}, \textit{Newton Krylov} and \textit{Approximate Newton
-% Krylov}. \cite{adflow_solvers} 
-
-% Originally, only multigrid was implemented as the other two solvers need the
-% partial derivatives $\partial r / \partial u$. Since they were needed for the
-% adjoint implementation anyways, it was a logical next step to implement the
-% Newton type solvers. This part will not go into any details, but it is
-% important to state that there are two ways (in ADflow) to compute the partial
-% derivatives needed: FD and AD.  
 
 
-\section{Netwons method for residual equations}
+
+
+\section{Newtons method for residual equations}
+\label{sec:newtons_method}
 Usually, the RANS equations are solved using a "dumb" algorithm such as
 \textit{jacobi iteration}. It is used to solve a linear system such as:
 
@@ -766,33 +758,40 @@ Usually, the RANS equations are solved using a "dumb" algorithm such as
 \end{equation}
 
 \noindent Where $u$ are the state variables (such as pressure and velocity). $b$
-are the sources, an $A$ is the state matrix. As this is an iterative approach,
+are the sources, and $A$ is the state matrix. As this is an iterative approach,
 the solutions gets better and better the longer the algorithm runs. This means,
 we need an criteria to stop. For this, we use the residual formulation:
 
 \begin{equation}
-    R(u_n) = b - Au_n 
+    r(u_n) = b - Au_n 
 \end{equation}
  
 \noindent Where $n$ represents the value of the current iteration. Once the
 residual value reaches a threshold, we stop.
 
 When looking at the partials that are needed for the adjoint method, we realize
-that we already compute the partials $\partial r / \partial u = R'(u)$. This
+that we already compute the partials $\partial r / \partial u = r'(u)$. This
 comes in handy as it can be used in Newtons method for the solution of equation
 \ref{eq:cfd_system}:
 
 \begin{equation}
-    u_{n+1} = u_n - \frac{R(u_n)}{R'(u_n)}
+    u_{n+1} = u_n - \Delta u_n
+\end{equation}
+
+\noindent Where $\Delta u_n$ is the net update or step. In the multivariate
+newtons method, it is obtained by solving the following linear system:
+
+\begin{equation}
+    \frac{\partial r}{\partial u} \Delta u_n = - r(u_n)
 \end{equation}
 
 \noindent Newtons method does converge faster than the before mentioned "dumb"
-approaches. But it is usually not implemented as the effort to obtain $R'(u)$
-is not considered worth the profit. But we are interested in gradient
+approaches. But it is usually not implemented as the effort to obtain $r'(u)$
+is not considered worth the payoff. But we are interested in gradient
 computation for optimizations and thus need the partials anyways. So it makes
 sense to use Newtons method "free of charge". This is exactly what ADflow does
 with its \textit{Newton-Krylov (NK)} and \textit{Approximate Newton-Krylov
-(ANK)} solvers. \textbf{ADD CITATION}
+(ANK)} solvers. \cite{mdobook}
 
 
 

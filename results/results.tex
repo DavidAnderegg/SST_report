@@ -80,7 +80,17 @@ parameters had to be clipped to increase robustness at the cost of convergence.
 
 
 
+
+
+
 \section{Grid Convergence}
+\subsection{Flatplate}
+Unfortunately, it was not possible to obtain a solution for the flat plate
+testcase on all grids. Thus this was not deemed worthy and is not shown here.
+The author is confident that a solution can be obtained but was unable to do so
+due to time constraints.
+
+\subsection{2D bump}
 Figure \ref{fig:gc_2d_bump} shows the grid convergence for the 2d bump testcase
 compared to data from the \textit{CFL3D} and \textit{FUN3D} CFD solvers. At
 first glace, ADflow seems to be in the right bulk part but does not completely
@@ -111,6 +121,7 @@ appear to smoothly approach a limit.
 
 \section{Partial derivatives}
 \subsubsection{Forward mode}
+\label{subsubsec:forward_ad}
 To verify the forward partial derivatives, the 3D test case is first converged
 to a relative tolerance of $1e-14$.\footnote{In theory, the partials should be
 accurate regardless of the current convergence. But it is more valuable when
@@ -151,7 +162,8 @@ $1e-9$. Of course, this is only lifted for SST and the other turbulence models
 still need to pass $1e-10$.
 
 
-\subsubsection{Reverse mode}
+\subsubsection{Backwards mode}
+\label{subsubsec:backwards_ad}
 To verify the backwards partials, a dot-product test was performed. It is also
 part of the regression test-suite. Table \ref{tab:partials_dotproduct_test}
 lists each test with the relative tolerance it achieved. The only test that
@@ -183,6 +195,7 @@ buffered routines as well. As this was not done, the test fails.
 
 
 \subsubsection{Reverse\_fast mode}
+\label{subsubsec:backwards_fast_ad}
 The regression test for the reverse\_fast partials simply compares them to the
 forwards routines. This is possible because the fast routines are a subset of
 the normal ones. Table \ref{tab:partials_fast} lists the relative accuracy. It
@@ -211,11 +224,13 @@ simply crash is already an achievement.
 
 
 \section{Total derivatives}
-As described in sec. XXX, the total derivatives were verified by comparing them
-to complex step. As described in sec. XXX, ADflow may assemble the adjoint
-system using either the forwards partials or the reverse\_fast partials. Table
-\ref{tab:total_derivs} lists the relative difference of various methods
-compared against complex step with a stepsize of $1e-200$.
+\label{sec:total_derivs}
+As described in sec. \ref{subsec:total_derivs}, the total derivatives were
+verified by comparing them to complex step. As described in sec. \ref{sec:ad},
+ADflow may assemble the adjoint system using either the forwards partials or
+the reverse\_fast partials. Table \ref{tab:total_derivs} lists the relative
+difference of various methods compared against complex step with a stepsize of
+$1e-200$.
 
 \begin{table}[H]
     \centering
