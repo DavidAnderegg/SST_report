@@ -1,7 +1,7 @@
 \section{Solver Convergence}
 \subsubsection{NACA0012}
 Figure \ref{fig:sc_NACA0012} shows the solver convergence for the NACA0012
-testcase. The baseline implementation (marked as \textit{base}) and the final
+testcase. The legacy implementation (marked as \textit{base}) and the final
 state when writing this report (marked with \textit{modified}) is shown. Both
 states were run once with 1 and 6 cpus.
 
@@ -11,7 +11,7 @@ states were run once with 1 and 6 cpus.
     \label{fig:sc_NACA0012}
 \end{figure}
 
-\noindent Lets take a look at the baseline implementation first. It was
+\noindent Lets take a look at the legacy implementation first. It was
 obtained using the ANK solver and a decoupled DADI solver for the turbulence
 model. For the turbulence model, a total of 20 sub iterations were used. When
 looking at the function values (top row), it can be seen that 1 and 6 cpus
@@ -32,7 +32,7 @@ convergence of 1e-6 is reached, the second order coupled ANK (CSANK) is
 engaged. Once it gets traction, it exhibits almost Newton-like convergence. The
 number of cpus does not really affect the number of iterations needed. It is
 also obvious that the modified version approaches the same function values as
-the baseline implementation. 
+the legacy implementation. 
 
 
 
@@ -42,7 +42,7 @@ Figure \ref{fig:sc_RAE2822} shows a similar convergence plot for the RAE2822
 testcase. Once again, the baseline and modified version with each 1 and 6 cpus
 is plotted. It is important to note that this case is somewhat hard as it lies
 in the transsonic regimes where shocks appear. But at the same time, it is even
-coarser than the NACA case which makes it hard to resolve the shocks properly.
+coarser than the NACA case which makes it hard to resolve those shocks properly.
 
 \begin{figure}[H] \centering
     \includegraphics[width=1.0\textwidth]{sc_RAE2822}
@@ -50,11 +50,11 @@ coarser than the NACA case which makes it hard to resolve the shocks properly.
     \label{fig:sc_RAE2822}
 \end{figure}
 
-\noindent First, lets glance at the baseline. This has also been obtained
-using the ANK solver for the flow variables and the DADI solver for the
-decoupled turbulence variables. A similar pattern to the NACA
-testcase appears: 1 cpu takes only half the iterations of what 6 cpus need.
-But, the converged values are the same. 
+\noindent First, lets glance at the legacy implementation. This has also been
+obtained using the ANK solver for the flow variables and the DADI solver for
+the decoupled turbulence variables. A similar pattern to the NACA testcase
+appears: 1 cpu takes only half the iterations of what 6 cpus need. But, the
+converged values are the same. 
 
 When looking at the general line pattern and comparing it to the NACA testcase,
 it appears to be more 'wiggly'. The author believes this is due to SST being
@@ -91,7 +91,7 @@ The author is confident that a solution can be obtained but was unable to do so
 due to time constraints.
 
 \subsection{2D bump}
-Figure \ref{fig:gc_2d_bump} shows the grid convergence for the 2d bump testcase
+Figure \ref{fig:gc_2d_bump} shows the grid convergence for the 2D bump testcase
 compared to data from the \textit{CFL3D} and \textit{FUN3D} CFD solvers. At
 first glace, ADflow seems to be in the right bulk part but does not completely
 agree with the reference. This difference may be explained through slightly
@@ -105,7 +105,7 @@ formulation.
 
 \begin{figure}[H] \centering
     \includegraphics[width=1.0\textwidth]{gc_2d_bump_nan-fix}
-    \caption{Grid convergence for 2D bump. Reference data is from
+    \caption{Grid convergence for 2D bump using SST. Reference data is from
     \cite{nasatmr}.}
     \label{fig:gc_2d_bump}
 \end{figure}
@@ -129,7 +129,7 @@ one can show that they are accurate for a converged state as this is what we
 are after. } Once this is the case, the partials are compared against finite
 difference and complex step. Anecdotal evidence suggest SST is highly
 non-linear which is reflected in the fact that the FD partials are quite off
-compared to AD (The maximum observed difference was in the order of $1e2$).
+compared to AD (the maximum observed difference was in the order of $1e2$).
 Table \ref{tab:partials_forward} lists the derivatives with the relative
 accuracy compared to CS (stepsize was $1e-40$). 
 \begin{table}[H]
@@ -278,6 +278,13 @@ derivatives are also completely wrong. But once again, the fact that a number
 was obtainable is already an achievement. It is expected that this will be
 fixed once more time is spent on the problem.
 
+When looking at the complex derivatives using a stepsize of $1e-40$, we observe
+quite a big difference. One would expect the difference to be in the region of
+machine precision ($\approx 1e-16$). Thus this may indicate two things: (1)
+complex convergences was not achieved; (2) SST is highly non-linear. It is not
+completely clear what is the case and this phenomenon needs to be investigated
+further.
+
 
 
 
@@ -294,12 +301,12 @@ insights (anecdotal and proven) gained through the course of this project.
 \begin{itemize}
     \item SST appears to be implemented correctly.
 
-    \item ANK does work using the AD preconditioner. But sometimes NaNs appear.
+    \item ANK does work using the AD pre-conditioner. But sometimes NaNs appear.
 
-    \item ANK does not work using FD preconditioner (probably due high
-        non-lineary of SST).
+    \item ANK does not work using the FD pre-conditioner (probably due to the
+        high non-lineary of SST).
 
-    \item Physicality check for ANK needs to be adjusted to SST.
+    \item Physicality check for ANK-turb needs to be adjusted to SST.
 
     \item Prototype adjoint is running.
 

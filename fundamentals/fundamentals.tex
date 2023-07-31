@@ -379,7 +379,7 @@ The boundary conditions are \cite{JONES1972301}:
 
 
 \subsubsection{Weaknesses}
-This model works well for prediction flows outside of boundary layers. Although
+This model works well for predicting flows outside of boundary layers. Although
 it has the capacity to predict the flow near the wall, inside the boundary
 layer, it does so poorly. If there are \textbf{adverse pressure gradients}
 and/or \textbf{shocks} present, the prediction inside the boundary layer is
@@ -442,7 +442,8 @@ different versions for this model} are as follows: \cite{nasatmr}
 The boundary conditions for the wall are equal to the $k$ - $\epsilon$ model.
 As there are many different versions, it is not quite clear what the correct
 values for the farfield would be. \cite{nasatmr} suggest that the ones for the
-SST model should be used (see section XXX). \cite{cfd101_k-omega}
+SST model should be used (see section \ref{subsubsec:sst_bcs}).
+\cite{cfd101_k-omega}
 
 \begin{align*}
     k_{w}        &= 0           &\epsilon_{w}       &= 0 \\
@@ -458,7 +459,7 @@ improved predictions in the fields of aerodynamics and turbomachinery.
 
 
 \subsubsection{Weaknesses}
-Unfortunately, this models solution highly depends on the freestream boundary
+Unfortunately, this model's solution highly depends on the freestream boundary
 conditions. Even small changes can lead to drastic different skin friction
 coefficients. This in turn may lead to different flow separation points.
 Unfortunately, it is not exactly clear where this dependence is coming from.
@@ -486,9 +487,11 @@ shows this concept.
 
 \subsubsection{Transport equations}
 It has already been established that the transport equation of $k$ is the same
-for both models (see equation \ref{eq:transport_k_omega}). When we take the
-transport equation for $\epsilon$ (eq. \ref{eq:tranport_epsilon_omega}) and
-substitute $\epsilon$ with equation \ref{eq:omega_epsilon}, we get:
+for both models (see equation \ref{eq:transport_k_omega}). 
+
+When we take the transport equation for $\epsilon$ (equation
+\ref{eq:tranport_epsilon_omega}) and substitute $\epsilon$ with equation
+\ref{eq:omega_epsilon}, we get:
 
 \begin{equation}
     \frac{\partial (\rho \omega)}{\partial t} + 
@@ -513,9 +516,9 @@ must be blended as well:
     \phi = F_1 \phi_1 + (1 - F1) \phi_2
 \end{equation}
 
-\noindent Where subscript 1 and 2 are the respective constants from each model.
-The constants for the standard Menter SST variant from 1994  are as follows:
-\cite{nasatmr}
+\noindent Where the subscripts 1 and 2 are the respective constants from each
+model. The constants for the standard Menter SST variant from 1994  are as
+follows: \cite{nasatmr}
 
 \begin{align*}
     \gamma_1 &= \frac{\beta_1}{C_{\nu}} - 
@@ -588,6 +591,27 @@ this distance). The higher $arg_2$ is, the bigger $F_2$ gets. And if $F_2$ gets
 bigger, the viscosity is limited more and more.
 
 
+\subsubsection{Boundary Conditions}
+\label{subsubsec:sst_bcs}
+According to \cite{nasatmr}, the boundary conditions are as follows:
+
+\begin{align*}
+    k_{w}       &= 0 &
+    \omega_{w}  &= 10 \frac{6 \nu}{\beta_1 (\Delta d_1)^2} \\
+    %
+    \frac{10^(-5) U_{\infty}^2}{Re_L} < k_{\infty} &< 
+    \frac{0.1 U_{\infty}^2}{Re_L} &
+%
+    \frac{U_{\infty}}{L} < \omega_{\infty} &<
+    10 \frac{U_{\infty}}{L}
+\end{align*}
+
+\noindent Where L refers to a characteristic length of the computational
+domain.
+
+
+
+
 \subsubsection{Conclusion}
 This model agrees better with experiments of mildly separated flows. This
 is mainly due to the viscosity limiter. Hence, it is best for external
@@ -606,7 +630,7 @@ When optimizing, we try to minimize the objective function $o(x)$ while making
 sure the constraints $c(x)$ are satisfied. The vector $x$ stands for the
 \textit{design variables (DVs)}. From an outside perspective, the objective
 $o(x)$ and constraints $c(x)$ are the same in the sense that we need to provide
-a function value an its gradients. The distinction only happens at the
+a function value and its gradients. The distinction only happens at the
 optimizer level. Thus, they are are called \textit{Functions of Interest (FoI)}
 or $f(x) = \begin{bmatrix} o(x) & c(x)\end{bmatrix}^T$. Therefore, the
 gradients we are after are $d f / d x$. To obtain it, we have a view different
@@ -645,7 +669,7 @@ options available: \cite{mdobook}
         operation. This works well in machine learning because there are no
         iterative solvers. But this is not the case here and the memory
         required is just to much. The \textit{adjoint method} bypasses this by
-        replacing part, where an iterative solver is needed,  with a linear
+        replacing the part, where an iterative solver is needed,  with a linear
         system which needs to be solved. So the trade is less memory footprint
         in exchange for more computing power. A trade that is well worth.
 \end{itemize}
@@ -654,12 +678,11 @@ options available: \cite{mdobook}
 
 
 \subsection{Adjoint method}
-The adjoint method\footnote{Analogous to AD, there exists also a forward mode
-called \textit{direct method}} involves solving the following system (as it
-scales with the number of FoIs, a system per FoI needs to be solved.):
+The adjoint method involves solving the following system (as it scales with the
+number of FoIs, a system per FoI needs to be solved.):
 
 \begin{equation}
-    \psi^T = \frac{\partial f}{\partial u} \frac{\partial r}{\partial u}^{-1}
+    \frac{\partial r}{\partial u} \psi^T = \frac{\partial f}{\partial u}
 \end{equation}
 
 \noindent Where $\psi^T$ are the adjoint vectors, $u$ are the state variables
@@ -675,16 +698,16 @@ follows:
 
 
 \noindent To compute the partial derivatives, any method mentioned in the
-section above may be used, but is most reasonable to use AD. \cite{mdobook}
+section above may be used, but it is most reasonable to use AD. \cite{mdobook}
 
 
 
 \subsection{Direct mode}
 As said before, there also exists an 'opposite' mode to adjoint, it is called
-\textit{direct mode}. First, we need to solve the direct vectors:
+\textit{direct mode}. First, we need to solve for the direct vectors ($\phi$):
 
 \begin{equation}
-    \phi = \frac{\partial r}{\partial x} \frac{\partial r}{\partial u}^{-1}
+    \frac{\partial r}{\partial u} \phi = \frac{\partial r}{\partial x} 
 \end{equation}
 
 \noindent Then, we can use it to obtain the total derivatives:
@@ -704,7 +727,7 @@ it comes in handy for verification of the adjoint method.
 Accurate gradients are important as they accelerate the optimization or may
 even prevent it from converging at all. Thus, the partial and total derivatives
 need to be verified. As the total derivatives depend on the partial ones, it
-makes sense to verify them first:
+makes sense to verify the partials first:
 
 \begin{enumerate}
     \item \textbf{Compare forward derivatives against FD.} As FD is not as

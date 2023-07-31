@@ -9,7 +9,7 @@ not anymore.
 ADflow is written in FORTRAN, but has a python wrapper. This means, the heavy
 lifting is done in a fast, compiled language, but the user has the benefits of
 an interpreted, object oriented programming environment. As explained in
-section \ref{sec:gradient_computation}, the adjoint methods need partial
+section \ref{sec:gradient_computation}, the adjoint method needs partial
 derivatives that are (in ADflow) obtained through means of
 automatic/algorithmic differentiation (AD). For this, a tool called
 \textit{tapenade}
@@ -49,15 +49,15 @@ convergence, but it increases robustness.
 Before diving deep into the changes that made SST run, we need to understand
 how ADflow solves the RANS equations and what it needs for that.
 
-For that, ADflow has three different solvers available: \textit{multigrid
-(MG)}, \textit{Newton-Krylov (NK)} and \textit{Approximate Newton-Krylov
-(ANK)}. It is possible to switch between the different solvers during a
-solution run. This allows to use each solver when it is most efficient. An
-example run might look like: initiate the simulation using multigrid, once a
-certain level of convergence is reached, engage the ANK solver and finally
-converge the last couple order of magnitudes using the NK Solver.
-\footnote{Please note that the ANK solver by itself is sufficient as a startup
-strategy and MG is not necessarily needed.}
+ADflow has three different solvers available: \textit{multigrid (MG)},
+\textit{Newton-Krylov (NK)} and \textit{Approximate Newton-Krylov (ANK)}. It is
+possible to switch between the different solvers during a solution run. This
+allows to use each solver when it is most efficient. An example run might look
+like: initiate the simulation using multigrid, once a certain level of
+convergence is reached, engage the ANK solver and finally converge the last
+couple order of magnitudes using the NK Solver. \footnote{Please note that the
+ANK solver by itself is sufficient as a startup strategy and MG is not
+necessarily needed.}
 
 \paragraph{Multigrid} is the baseline solver that was implemented first. It
 uses either the \textit{Runge-Kutta (RK)}, or the \textit{Diagonalized
@@ -99,9 +99,10 @@ using either a second, turbulence specifi ANK solver (from now on called
 \textit{ANK-turb}) or a legacy \textit{Diagonalized Alternating Direction
 Implicit (DADI)} method. Splitting it up is beneficial early on as it increases
 robustness. Once again, when the residual norm reaches a user-defined level,
-the coupled mode is enganged. In that state, only one ANK solver remains which
-solves the flow and turbulence variables simultaneously. This helps to improve
-the convergence in the later stages. \cite{adflow_solvers}
+the coupled mode (\textbf{CANK}) is engaged. In that state, only one ANK
+solver remains which solves the flow and turbulence variables simultaneously.
+This helps to improve the convergence in the later stages.
+\cite{adflow_solvers}
 
 The ANK solver is made even more robust by introducing the concept of a
 \textit{physicality check}. When looking at section \ref{sec:newtons_method},
@@ -133,7 +134,7 @@ shows the flow of data for a simple airfoil optimization example.
 right are the functions of interest (FoI). We have two types of design
 variables: \textit{aerodynamic} (such as angle of attack) and \textit{geometric
 ones}. The geometry is parameterized using the \textit{Free Form Deformation
-(FFD)} approach. A similar picture emerges for the FoIs, the area ($A$) of the
+(FFD)} approach. A similar picture emerges for the FoIs: the area ($A$) of the
 airfoil does only depend on the geometry, not the flow solution. But the lift
 to drag ratio ($L/D$) does depend on the aerodynamic solution.
 
@@ -148,7 +149,7 @@ the area ($A$) does not depend on the flow solution and is directly computed
 using only the surface mesh.
 
 If you reverse the flow of information and exchange "CFD solver" with "adjoint
-solver", you know how ADflow computes total derivatives for optimization. If
+solver", you know how ADflow computes the total derivatives for optimization. If
 you would like to learn more about it, take a look at \cite{cm1} or
 \cite{mdobook}.
 
@@ -163,11 +164,11 @@ compute it using AD or FD. If it is done through AD, it is called
 \textit{FDPC}. Counter-intuitively, the FD pre-conditioner is more efficient
 than the AD one. But the accuracy of FD is worse.
 
-It is important to realize that this Jacobian is mostly zero. This is because a
-certain cell only depends on its neighboring cells (and not the whole domain).
-This realization allows to use the concept of coloring which is basically
-exploiting this non-dependence to compute most of the derivatives in parallel.
-\cite{mdobook}
+It is important to realize that this Jacobian ($\partial r / \partial u$) is
+mostly zero. This is because a certain cell only depends on its neighboring
+cells (and not the whole domain). This realization allows to use the concept of
+coloring which is basically exploiting this non-dependence to compute most of
+the derivatives in parallel. \cite{mdobook}
 
 
 
@@ -215,12 +216,12 @@ thus needs two layers of halo cells.
 
 \subsection{Halo exchange and AD}
 If one does not care about AD, this halo exchange is straight forward. But we
-do, and as such, some things need to be considered. The exchanges is performed
+do, and as such, some things need to be considered. The exchange is performed
 using the \textit{Message Passing Interface (MPI)}. Unfortunately, tapenade can
 not handle MPI calls. To make this work, the differentiated code is divided
-into parts: The \textbf{math heavy} part is differentiated using tapenade and
-the \textbf{remaining part} is hand-differentiated. This is feasible because
-the hand-differentiated part consists mostly of calling the AD part and
+into two parts: The \textbf{math heavy} part is differentiated using tapenade
+and the \textbf{remaining part} is hand-differentiated. This is feasible
+because the hand-differentiated part consists mostly of calling the AD part and
 performing communication. 
 
 The turbulence model is considered a math heavy part that is automatically
@@ -235,7 +236,7 @@ exchange.
 Exchanging values is absolutely detrimental and ADflow has routines and places
 where it is performed. But those routines are chosen carefully to not
 interfere with AD. The problem with $F_1$ is the fact, that it is not a regular
-flow or turbulence variable and thus, it has no such official routine for
+flow or turbulence variable and thus, it has no such official routines for
 exchange. In the legacy implementation of SST, it was just exchanged in the
 model itself. But we cant do this anymore and thus the question is: Why was it
 done this way and how do we get rid of this intermediate communication?
@@ -285,7 +286,8 @@ the closets point for the current cell. This information is exchanged on
 initialization and assumed to not change\footnote{This is only partially true
 in the context of deforming meshes.}. After a mesh has been deformed, a
 function named \texttt{updateWallDistancesQuickly()} is called. It actually
-computes the distance to the earlier determined nearest surface cell.
+computes the distance to the earlier determined nearest surface cell. Take a
+look at \cite{cm1} where this procedure is explained in more detail.
 
 
 
@@ -296,8 +298,9 @@ options: \texttt{whalo1(...)} and \texttt{whalo2(...)}. The only difference
 between those functions is that the first one only exchanges the halos in the
 first layer and the second one exchanges all layers. For brevity, the arguments
 were omitted. But they are just boolean flags that determine what variables
-need to be exchanged (e.g. flow variables). We need the wall distance on both
-halo layers and thus the function \texttt{whalo2(...)} was extended.
+need to be exchanged (e.g. flow variables). We do not need the wall distance on
+both halo layers. But to be future-prove,  the function \texttt{whalo2(...)}
+was extended.
 
 This extension has been straight forward. Please note that some special care
 for the hand-differentiated part was needed. This is to make sure that the
@@ -370,11 +373,11 @@ needed for a first running prototype.
 
 
 \subsection{Implementation}
-In order to ad the SST code, the following procedure has been followed:
+In order to AD the SST code, the following procedure has been followed:
 
 \begin{enumerate}
     \item Split the whole code in two parts: part (a) computes the residuals
-        and part (b) solves SST in decoupled manner using DADI. 
+        and part (b) solves SST in a decoupled manner using DADI. 
 
     \item Part (b) stays as it is but needs to be called in the right spot.
 
@@ -415,10 +418,10 @@ wall). The legacy implementation solves this as follows:
 
 \noindent This procedure works fine for the regular residual evaluation. It
 also works for the forward AD mode. But when looking at the reverse mode, one
-has to revers procedure mentioned: first we apply the Neumann BC (3), and then
-(2) we overwrite $F_1$ with garbage that depends on an un-initialized
-wall distance. To prevent this, we must take special care to not loop over BC
-halos in step (2).
+has to reverse the procedure mentioned: first we apply the Neumann BC (3), and
+then (2) we overwrite $F_1$ with garbage that depends on an un-initialized wall
+distance. To prevent this, we must take special care to not loop over BC halos
+in step (2).
 
 
 
@@ -486,7 +489,7 @@ and table \ref{tab:mesh_parameters_n0012} lists the mesh parameters.
 \subsubsection{RAE 2822}
 This setup uses the supercritical RAE 2822 airfoil. As such, it operates in the
 transsonic regime which is dominated by mach effects and shocks. Table
-\ref{tab:mesh_parameters_rae2822} lists the mesh parameters and tab
+\ref{tab:mesh_parameters_rae2822} lists the mesh parameters and table
 \ref{tab:flow_conditions_rae2822} the flow conditions. Similar to the NACA
 testcase, the number of compute cells is to low to obtain physical correct
 results. 
@@ -612,7 +615,7 @@ This is the only 3D test employed. It makes sure the changes also work in the
 third dimension, but it is primarily intended for gradient verification. It is
 quite coarse and thus not physical. Figure \ref{fig:3dwing_setup} shows the
 surface mesh with its \textit{Free Form Deformation (FFD)} points around. They
-are used as parametrisation for various geometric design variables. Table
+are used as a parametrisation for various geometric design variables. Table
 \ref{tab:3dwing_flowconditions} lists the flow conditions and table
 \ref{tab:3dwing_dvs} shows the design variables available.
 
