@@ -94,7 +94,31 @@
 
 
     \begin{abstract}
-    abstract
+
+        With the increase of available computer power, Reynolds Averaged Navier
+        Stokes (RANS) based optimizations become more and more viable. For
+        conventional flow analysis, the correct turbulence model is
+        detrimental to obtain correct results. This dependence may be even
+        exaggerated for optimizations as the turbulence model is responsible
+        for various aerodynamic effects the optimizer might exploit.
+
+        This work extends the number of available turbulence models in the open
+        source CFD solver ADflow by adding the \textit{menter SST} model.
+        ADflow is specialized in optimizations and uses the \textit{adjoint
+        method} to compute the gradients needed in an efficient manner. To make
+        the SST available for optimizations, the changes have been
+        differentiated using Automatic Differentiation (AD). 
+
+        The implemented model is verified by comparing the results of the "2D
+        bump" testcase to reference data. The partial and total gradients are
+        verified using finite differences, complex step and the dot-product
+        test. 
+
+        The results show that SST is most likely implemented correctly. Also
+        the Newton type solvers available in ADflow seem to work with SST. But
+        the obtained total gradients are only partially correct. To summarize,
+        this project provides a prototype implementation which still needs some
+        time to iron out the remaining bugs.
     \end{abstract}
 
     \tableofcontents\clearpage
