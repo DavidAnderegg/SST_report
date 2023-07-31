@@ -1,1 +1,129 @@
-conclusion
+To conclude, this project has made significant strides in enhancing the SST
+turbulence model for optimization purposes within ADflow. The following key
+points highlight the project's achievements:
+
+First, the distance to the nearest wall had to be extended for halo cells. This
+was necessary in order to get rid of some intermediate MPI communication in the
+$F_1$ blending function of SST. It was important to get rid of this
+communication as it prevents automatic differentiation.
+
+The implementation of Automatic Differentiation (AD) for the SST turbulence
+model was a major milestone. This implementation facilitated the efficient
+computation of partial derivatives, which are essential for optimization tasks
+in ADflow. But also the regular solvers like \textit{Approximate Netwon-Krylov
+(ANK)} and \textit{Newton-Krylov (NK)} profit from this as they now have access
+to an AD-preconditioner.
+
+It has been shown that the changes did not change the legacy implementation of
+SST. Using testcases from NASA's \textit{Turbulence Modeling Resource (TMR)},
+it has also been shown that the results obtained mostly agree to reference data.
+Although there is still some uncertainty because a different production term for
+the turbulence had to be used in order do achieve convergence. It was also not
+possible to obtain results for the \textit{flatplate} testcase. The author is
+confident that a bit more time would adress this shortcomings.
+
+It is even possible to obtain total gradients using the adjoint method when
+assembling the state residual matrix using forward routines. The aerodynamic
+design variables appear to be correct, although to relatively low tolerance.
+This my be explained through the high non-linearity of SST. It is also
+important to note that the geometric design variables seem to be wrong.
+Additionally, they appear to depend on the number of cpus used. This most
+likely indicates a problem with the extension of the wall distance to halo
+cells.
+
+When trying to solve the adjoint system using the reverse\_fast routines, on
+may get a number. But it is completely wrong. But the author still considers
+this an achievement because ADflow does not simply crash.
+
+In order to maintain the quality and integrity of ADflow, regression test are
+used. This project did extended them for the SST turbulence model. But because
+the implementation of SST is only at a prototype stage, the tests are as well.
+
+\section{Comparison to Goals}
+When looking at the goals stated in the introduction (section \ref{sec:goals}),
+most of them have been partially achieved. The following lines take a look at
+the goals that were missed or only partially fulfilled.
+
+\begin{enumerate}
+
+    \item[4.] Make sure the partial AD derivatives are correct. 
+        \begin{itemize}
+            \item This has almost been achieved. Only the backwards mode for
+                the Forces is wrong. Also, the backwards\_fast mode is not
+                correct.
+        \end{itemize}
+
+    \item[5.] Get the NK/ANK Solver working.
+        \begin{itemize}
+            \item Apart from the finite differences pre-conditioner, this has
+                been achieved.
+
+            \item The physicality check probably also needs some adjustment for
+                SST.
+        \end{itemize}
+
+    \item[6.] Test and verify the implementation
+        \begin{itemize}
+            \item This has been partially achieved. It would be great if the
+                flatplate testcase would have worked. Also the different
+                production terms for SST need to be tested more.
+        \end{itemize}
+
+    \item[7.] Get the adjoint Solver working.
+        \begin{itemize}
+            \item Has been achieved in the sense that it does not crash 
+        \end{itemize}
+
+    \item[8.] Test and verify the total gradients.
+        \begin{itemize}
+            \item This has been partially achieved. The aerodynamic design
+                variables appear to be correct when using forward AD for the
+                state residual matrix. But the aerodynamic variables are
+                slightly off. 
+
+            \item The gradients are completely off when using the
+                backwards\_fast routines.
+        \end{itemize}
+\end{enumerate}
+
+To conclude, SST has now achieved a prototype state where it is almost ready
+for optimization. There are still some bugs present, but it is clear where they
+are and mostly by what they are caused. The only thing that prevented the
+author from fixing them was a lack of time. As such, one has to realize that
+getting SST fully working for optimization is a big task. Thus, the outcome of
+this project should be considered a success.
+
+
+
+\section{Outlook}
+This report stated openly and clearly where bugs are present and by what they
+are most likely caused. As fixing those bugs and getting SST ready for
+production is probably the most valuable target of a proceeding project, the
+steps that come next should be clear. But still, the following line lists the
+most prominent points in random order:
+
+\begin{itemize}
+    \item Adapt the physicality check in ANK-turb for SST
+
+    \item Get the finite difference preconditioner working in ANK for SST.
+        Maybe only the step size needs to be changed.
+
+    \item Make sure the partials are correctly summed up in the reverse
+        routines that exchange the wall distance in halos.
+
+    \item Take a closer look at what is going on with total derivatives
+        obtained through complex step. The results have shown that there is a
+        slight difference between a step size of $1e-40$ and $1e-200$. This
+        should not be the case.
+        
+    \item Make sure all the gradients are correct when solving the adjoit system
+        using the forward AD routines.
+
+    \item Fix the partial backwards\_fast derivatives.
+
+    \item Make sure the gradients are correct when using the backwards\_fast
+        routines.
+
+    \item Optimize an airfoil using SST.
+\end{itemize}
+
